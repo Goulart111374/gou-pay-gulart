@@ -227,7 +227,7 @@ const PaymentPage = () => {
                 <Checkbox id="checkout_terms" checked={acceptedTerms} onCheckedChange={(v) => setAcceptedTerms(Boolean(v))} />
                 <label htmlFor="checkout_terms" className="text-[#2B2B2B]">
                   <span className="align-middle">Declaro que li e aceito os </span>
-                  <a href="/dashboard/terms" target="_blank" rel="noreferrer" className="text-[#6A2FE0] underline">Termos da GouPay</a>
+                  <a href="/dashboard/terms" target="_blank" rel="noreferrer" className="text-[#6A2FE0] underline">Termos de Uso da Plataforma GOUPAY</a>
                 </label>
               </div>
               <Button

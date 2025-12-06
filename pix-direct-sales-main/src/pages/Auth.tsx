@@ -101,7 +101,7 @@ const Auth = () => {
               <Checkbox id="signup_terms" checked={acceptedTermsSignup} onCheckedChange={(v) => setAcceptedTermsSignup(Boolean(v))} />
               <label htmlFor="signup_terms" className="text-foreground">
                 <span className="align-middle">Declaro que li e aceito os </span>
-                <a href="/dashboard/terms" target="_blank" rel="noreferrer" className="text-primary underline">Termos da GouPay</a>
+                <a href="/dashboard/terms" target="_blank" rel="noreferrer" className="text-primary underline">Termos de Uso da Plataforma GOUPAY</a>
               </label>
             </div>
           )}
