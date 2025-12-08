@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { QrCode, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +29,11 @@ const PaymentPage = () => {
   const [qrCodeBase64, setQrCodeBase64] = useState<string>("");
   const [paymentId, setPaymentId] = useState<string>("");
   const [status, setStatus] = useState<string>("pending");
+  const [emailValid, setEmailValid] = useState<boolean>(false);
+  const [nameValid, setNameValid] = useState<boolean>(false);
+  const [touched, setTouched] = useState<{ email: boolean; name: boolean }>({ email: false, name: false });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [sellerBlocked, setSellerBlocked] = useState<boolean>(false);
 
   useEffect(() => {
     loadProduct();
@@ -52,8 +58,12 @@ const PaymentPage = () => {
   };
 
   const handleGeneratePayment = async () => {
-    if (!buyerEmail || !buyerName) {
+    if (!buyerEmail || !buyerName || !emailValid || !nameValid) {
       toast.error("Preencha todos os campos");
+      return;
+    }
+    if (!acceptedTerms) {
+      toast.error("Você deve aceitar os Termos de Uso");
       return;
     }
 
@@ -65,12 +75,19 @@ const PaymentPage = () => {
           productId: product!.id,
           buyerEmail,
           buyerName,
+          acceptedTerms: true,
         }),
       });
 
       const isJson = resp.headers.get("content-type")?.includes("application/json");
       const data = isJson ? await resp.json() : { error: await resp.text() };
       if (!resp.ok) {
+        if (resp.status === 403) {
+          setSellerBlocked(true);
+          toast.error("O vendedor precisa renovar a assinatura para ativar os pagamentos.");
+          setShowPayment(false);
+          return;
+        }
         const details = typeof data?.details === "string" ? data.details : JSON.stringify(data?.details ?? {});
         throw new Error(`${data?.error || "Erro ao gerar pagamento"}${details ? `: ${details}` : ""}`);
       }
@@ -85,6 +102,16 @@ const PaymentPage = () => {
       toast.error(error.message || "Erro ao gerar pagamento");
     }
   };
+
+  useEffect(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    setEmailValid(emailRegex.test(buyerEmail.trim()));
+  }, [buyerEmail]);
+
+  useEffect(() => {
+    const onlyLetters = buyerName.trim().length > 1;
+    setNameValid(onlyLetters);
+  }, [buyerName]);
 
   useEffect(() => {
     if (!paymentId) return;
@@ -132,123 +159,152 @@ const PaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4 flex items-center justify-center">
-      <Card className="w-full max-w-lg shadow-purple border-primary/20">
-        {!showPayment ? (
-          <>
+    <div className="payment-bg p-6">
+      {!showPayment ? (
+        <div className="mx-auto max-w-6xl grid gap-4 md:grid-cols-3">
+          <Card className="bg-white shadow-sm border rounded-xl">
             <CardHeader>
-              <CardTitle className="text-2xl">{product.name}</CardTitle>
-              <CardDescription>{product.description}</CardDescription>
-              <div className="pt-4">
-                <p className="text-3xl font-bold text-primary">
-                  R$ {product.price.toFixed(2)}
-                </p>
-              </div>
+              <CardTitle className="text-base tracking-wide text-[#2B2B2B]">Identifique-se</CardTitle>
+              <CardDescription className="text-neutral-700">Utilizaremos seu e‑mail para identificação</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="buyer_name">Seu Nome</Label>
-                <Input
-                  id="buyer_name"
-                  placeholder="Nome completo"
-                  value={buyerName}
-                  onChange={(e) => setBuyerName(e.target.value)}
-                  className="border-primary/20"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="buyer_email">Seu Email</Label>
+                <Label htmlFor="buyer_email" className="text-[#6A2FE0]">Email</Label>
                 <Input
                   id="buyer_email"
                   type="email"
                   placeholder="seu@email.com"
                   value={buyerEmail}
                   onChange={(e) => setBuyerEmail(e.target.value)}
-                  className="border-primary/20"
+                  onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                  aria-invalid={touched.email && !emailValid}
+                  className="rounded-lg bg-[#F2ECFF] border-[#8A2BE2]/30 text-[#1B1426] placeholder-[#7A73A8] focus-visible:ring-2 focus-visible:ring-[#8A2BE2] focus-visible:border-[#8A2BE2]"
                 />
+                {touched.email && (
+                  <p className={`text-xs ${emailValid ? "text-[#6A2FE0]" : "text-destructive"}`}>
+                    {emailValid ? "E‑mail válido" : "Informe um e‑mail válido"}
+                  </p>
+                )}
               </div>
-
-              <Button 
-                className="w-full bg-gradient-hero hover:opacity-90 shadow-purple"
-                onClick={handleGeneratePayment}
-              >
-                Gerar Pagamento PIX
-              </Button>
+              <div className="space-y-2">
+                <Label htmlFor="buyer_name" className="text-[#6A2FE0]">Nome completo</Label>
+                <Input
+                  id="buyer_name"
+                  placeholder="Digite seu nome completo"
+                  value={buyerName}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, "");
+                    setBuyerName(v);
+                  }}
+                  onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                  aria-invalid={touched.name && !nameValid}
+                  className="rounded-lg bg-[#F2ECFF] border-[#8A2BE2]/30 text-[#1B1426] placeholder-[#7A73A8] focus-visible:ring-2 focus-visible:ring-[#8A2BE2] focus-visible:border-[#8A2BE2]"
+                />
+                {touched.name && (
+                  <p className={`text-xs ${nameValid ? "text-[#6A2FE0]" : "text-destructive"}`}>
+                    {nameValid ? "Nome válido" : "Use apenas letras e espaços"}
+                  </p>
+                )}
+              </div>
             </CardContent>
-          </>
-        ) : (
-          <>
+          </Card>
+
+          <Card className="bg-white shadow-sm border rounded-xl">
+            <CardHeader>
+              <CardTitle className="text-base tracking-wide text-[#2B2B2B]">Formas de pagamento</CardTitle>
+              <CardDescription className="text-neutral-700">Para finalizar, escolha uma forma de pagamento</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border-2 border-emerald-600 bg-emerald-50 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-emerald-600" />
+                  <span className="font-medium text-emerald-700">PIX</span>
+                </div>
+                <Check className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Checkbox id="checkout_terms" checked={acceptedTerms} onCheckedChange={(v) => setAcceptedTerms(Boolean(v))} />
+                <label htmlFor="checkout_terms" className="text-[#2B2B2B]">
+                  <span className="align-middle">Declaro que li e aceito os Termos de Uso</span>
+                </label>
+              </div>
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                onClick={handleGeneratePayment}
+                disabled={sellerBlocked || !emailValid || !nameValid || !acceptedTerms}
+              >
+                Finalizar compra
+              </Button>
+              {sellerBlocked && (
+                <div className="text-destructive text-sm">Vendedor precisa renovar a assinatura.</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm border rounded-xl">
+            <CardHeader>
+              <CardTitle className="text-base tracking-wide text-[#2B2B2B]">Resumo</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded bg-muted" />
+                <div>
+                  <p className="text-sm font-medium text-[#2B2B2B]">{product.name}</p>
+                  <p className="text-xs text-neutral-700">{product.description}</p>
+                </div>
+              </div>
+              <div className="border-t pt-3 text-sm text-[#2B2B2B]">
+                <div className="flex justify-between"><span className="text-neutral-700">Subtotal</span><span className="text-[#2B2B2B]">R$ {product.price.toFixed(2)}</span></div>
+                <div className="flex justify-between font-semibold mt-2"><span className="text-[#2B2B2B]">Total</span><span className="text-[#2B2B2B]">R$ {product.price.toFixed(2)}</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="mx-auto max-w-3xl flex items-center justify-center">
+          <Card className="w-full bg-white shadow-sm border rounded-xl">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <QrCode className="h-6 w-6 text-primary" />
+                <QrCode className="h-6 w-6 text-emerald-600" />
                 <CardTitle>Pagamento via PIX</CardTitle>
               </div>
-              <CardDescription>
-                Escaneie o QR Code ou copie o código PIX para pagar
-              </CardDescription>
+              <CardDescription>Escaneie o QR Code ou copie o código PIX</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-white p-6 rounded-lg flex items-center justify-center">
                 {qrCodeBase64 ? (
-                  <img
-                    src={`data:image/png;base64,${qrCodeBase64}`}
-                    alt="QR Code PIX"
-                    className="w-64 h-64 rounded-lg"
-                  />
+                  <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code PIX" className="w-64 h-64 rounded-lg" />
                 ) : (
                   <div className="w-64 h-64 bg-muted flex items-center justify-center rounded-lg">
                     <QrCode className="h-32 w-32 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground absolute mt-48">QR Code PIX</p>
                   </div>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label>Código PIX</Label>
                 <div className="flex gap-2">
-                  <Input value={qrCode} readOnly className="font-mono text-xs border-primary/20" />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={copyPixCode}
-                    className="border-primary/20 hover:bg-primary/10"
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-success" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
+                  <Input value={qrCode} readOnly className="font-mono text-xs" />
+                  <Button variant="outline" size="icon" onClick={copyPixCode}>
+                    {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
-
-              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
                 <p className="text-sm font-medium mb-1">Valor a pagar</p>
-                <p className="text-2xl font-bold text-primary">
-                  R$ {product.price.toFixed(2)}
-                </p>
+                <p className="text-2xl font-bold text-emerald-700">R$ {product.price.toFixed(2)}</p>
               </div>
-
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>• Abra o app do seu banco</p>
-                <p>• Escolha pagar via PIX</p>
-                <p>• Escaneie o QR Code ou cole o código</p>
-                <p>• Confirme o pagamento</p>
-              </div>
-
               {status === "approved" && (
-                <div className="border rounded-lg p-4 bg-success/10 border-success/20">
-                  <p className="font-medium text-success">Compra aprovada</p>
+                <div className="border rounded-lg p-4 bg-emerald-50 border-emerald-200">
+                  <p className="font-medium text-emerald-700">Compra aprovada</p>
                   <Button className="mt-3 w-full" asChild>
                     <a href={`/auth?signup=1&prefillEmail=${encodeURIComponent(buyerEmail)}`}>Criar conta e acessar</a>
                   </Button>
                 </div>
               )}
             </CardContent>
-          </>
-        )}
-      </Card>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

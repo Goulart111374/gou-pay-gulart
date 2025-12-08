@@ -131,3 +131,22 @@ All colors MUST be HSL.
     margin-bottom: 10px !important;
   }
 }
+
+.payment-bg {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 500px at 50% 10%, hsl(270 80% 18% / 0.25), transparent 75%),
+    radial-gradient(900px 500px at 10% 50%, hsl(270 80% 18% / 0.20), transparent 75%),
+    radial-gradient(900px 500px at 90% 50%, hsl(270 80% 18% / 0.20), transparent 75%),
+    radial-gradient(900px 500px at 50% 90%, hsl(270 80% 18% / 0.30), transparent 75%),
+    linear-gradient(120deg, hsl(270 25% 10%), hsl(270 25% 8%));
+  position: relative;
+}
+
+.payment-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, hsl(0 0% 100% / 0.04) 0px, hsl(0 0% 100% / 0.04) 2px, transparent 2px, transparent 10px);
+  pointer-events: none;
+}
