@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { QrCode, Copy, Check } from "lucide-react";
+import { QrCode, Copy, Check, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Product {
@@ -34,6 +34,8 @@ const PaymentPage = () => {
   const [paymentId, setPaymentId] = useState<string>("");
   const [status, setStatus] = useState<string>("pending");
   const [sellerBlocked, setSellerBlocked] = useState<boolean>(false);
+  const [paymentStartedAt, setPaymentStartedAt] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState<number>(0);
 
   useEffect(() => {
     loadProduct();
@@ -97,6 +99,8 @@ const PaymentPage = () => {
       setPaymentId(data.payment_id || "");
       setStatus(data.status || "pending");
       setShowPayment(true);
+      setPaymentStartedAt(Date.now());
+      setRemainingMs(24 * 60 * 60 * 1000);
       toast.success("Pagamento gerado! Escaneie o QR Code ou copie o código PIX");
     } catch (e) {
       const message = e instanceof Error ? e.message : "Erro ao gerar pagamento";
@@ -131,6 +135,23 @@ const PaymentPage = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [paymentId]);
+
+  useEffect(() => {
+    if (!paymentStartedAt) return;
+    const expiresAt = paymentStartedAt + 24 * 60 * 60 * 1000;
+    const tick = () => setRemainingMs(Math.max(0, expiresAt - Date.now()));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [paymentStartedAt]);
+
+  const fmt = (ms: number) => {
+    const total = Math.floor(ms / 1000);
+    const hh = String(Math.floor(total / 3600)).padStart(2, "0");
+    const mm = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+    const ss = String(total % 60).padStart(2, "0");
+    return `${hh}:${mm}:${ss}`;
+  };
 
   const copyPixCode = () => {
     navigator.clipboard.writeText(qrCode);
@@ -268,41 +289,80 @@ const PaymentPage = () => {
           </div>
         </div>
       ) : (
-        <div className="mx-auto max-w-3xl flex items-center justify-center">
-          <Card className="w-full bg-white shadow-sm border rounded-xl">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <QrCode className="h-6 w-6 text-emerald-600" />
-                <CardTitle>Pagamento via PIX</CardTitle>
+        <div className="mx-auto max-w-3xl space-y-6">
+          <Card className="w-full bg-[#111111] border-[#2A2A2A] rounded-2xl">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-white">
+                <div className="space-y-1">
+                  <p className="text-sm text-[#AFAFAF]">Produtos</p>
+                  <p className="font-medium">1x {product.name}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-[#AFAFAF]">Total</p>
+                  <p className="font-bold text-xl">R$ {product.price.toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-[#AFAFAF]">Email</p>
+                  <p className="font-medium">{buyerEmail}</p>
+                </div>
               </div>
-              <CardDescription>Escaneie o QR Code ou copie o código PIX</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-white p-6 rounded-lg flex items-center justify-center">
-                {qrCodeBase64 ? (
-                  <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code PIX" className="w-64 h-64 rounded-lg" />
-                ) : (
-                  <div className="w-64 h-64 bg-muted flex items-center justify-center rounded-lg">
-                    <QrCode className="h-32 w-32 text-muted-foreground" />
-                  </div>
-                )}
+            </CardContent>
+          </Card>
+
+          <Card className="w-full bg-[#111111] border-[#2A2A2A] rounded-2xl text-white">
+            <CardContent className="p-6 space-y-6">
+              <div className="flex items-center justify-between text-sm text-[#AFAFAF]">
+                <span>Tempo restante</span>
+                <span className="font-mono text-base text-white">{fmt(remainingMs)}</span>
               </div>
+              <div className="text-center text-[#AFAFAF]">QR code</div>
+              <div className="relative mx-auto w-[280px] h-[280px] flex items-center justify-center">
+                <span className="absolute left-0 top-0 w-8 h-1 bg-amber-400"></span>
+                <span className="absolute left-0 top-0 w-1 h-8 bg-amber-400"></span>
+                <span className="absolute right-0 top-0 w-8 h-1 bg-amber-400"></span>
+                <span className="absolute right-0 top-0 w-1 h-8 bg-amber-400"></span>
+                <span className="absolute left-0 bottom-0 w-8 h-1 bg-amber-400"></span>
+                <span className="absolute left-0 bottom-0 w-1 h-8 bg-amber-400"></span>
+                <span className="absolute right-0 bottom-0 w-8 h-1 bg-amber-400"></span>
+                <span className="absolute right-0 bottom-0 w-1 h-8 bg-amber-400"></span>
+                <div className="rounded-xl overflow-hidden bg-white p-3">
+                  {qrCodeBase64 ? (
+                    <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code PIX" className="w-[240px] h-[240px]" />
+                  ) : (
+                    <div className="w-[240px] h-[240px] bg-muted flex items-center justify-center">
+                      <QrCode className="h-24 w-24 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="text-center text-[#AFAFAF]">Ou pague com</div>
               <div className="space-y-2">
-                <Label>Código PIX</Label>
-                <div className="flex gap-2">
-                  <Input value={qrCode} readOnly className="font-mono text-xs" />
-                  <Button variant="outline" size="icon" onClick={copyPixCode}>
-                    {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                <Label className="text-white">PIX Copia e cola</Label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 bg-[#191919] border border-[#2A2A2A] rounded-lg p-2">
+                    <Copy className="h-4 w-4 text-[#AFAFAF]" />
+                    <Input value={qrCode} readOnly className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-xs text-[#EDEDED]" />
+                  </div>
+                  <Button onClick={copyPixCode} className="w-full bg-[#222222] hover:bg-[#2A2A2A] text-white">
+                    Copiar Código Pix
                   </Button>
                 </div>
               </div>
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <p className="text-sm font-medium mb-1">Valor a pagar</p>
-                <p className="text-2xl font-bold text-emerald-700">R$ {product.price.toFixed(2)}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="w-full bg-[#111111] border-[#2A2A2A] rounded-2xl text-white">
+            <CardContent className="p-6 space-y-3">
+              <p className="font-semibold">Importante</p>
+              <p className="text-[#AFAFAF]">Como pagar com o Pix</p>
+              <div className="space-y-3 text-sm text-[#AFAFAF]">
+                <div className="flex items-center gap-2"><QrCode className="h-4 w-4 text-white" /> Utilize o app de seu banco para escanear o código QR.</div>
+                <div className="flex items-center gap-2"><Copy className="h-4 w-4 text-white" /> Copie o código Pix acima e cole no app do seu banco.</div>
+                <div className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-white" /> Após o pagamento será aprovado automaticamente.</div>
               </div>
               {status === "approved" && (
-                <div className="border rounded-lg p-4 bg-emerald-50 border-emerald-200">
-                  <p className="font-medium text-emerald-700">Compra aprovada</p>
+                <div className="mt-4 border border-[#2A2A2A] rounded-lg p-4 bg-[#161616]">
+                  <p className="font-medium text-success">Compra aprovada</p>
                   <Button className="mt-3 w-full" asChild>
                     <a href={`/auth?signup=1&prefillEmail=${encodeURIComponent(buyerEmail)}`}>Criar conta e acessar</a>
                   </Button>
