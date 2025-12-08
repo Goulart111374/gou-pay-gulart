@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { QrCode, Copy, Check, CheckCircle } from "lucide-react";
+import { QrCode, Copy, Check, CheckCircle, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 interface Product {
@@ -267,11 +267,13 @@ const PaymentPage = () => {
               <CardTitle className="text-base tracking-wide text-[#2B2B2B]">Resumo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded bg-muted" />
-                <div>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-[#6A2FE0]" />
+                </div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-[#2B2B2B]">{product.name}</p>
-                  <p className="text-xs text-neutral-700">{product.description}</p>
+                  <p className="text-xs text-neutral-700 break-words whitespace-normal">{product.description}</p>
                 </div>
               </div>
               <div className="border-t pt-3 text-sm text-[#2B2B2B]">
