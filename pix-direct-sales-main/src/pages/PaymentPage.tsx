@@ -162,7 +162,11 @@ const PaymentPage = () => {
   return (
     <div className="payment-bg p-6">
       {!showPayment ? (
-        <div className="mx-auto max-w-6xl grid gap-4 md:grid-cols-3">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-4 px-1">
+            <h1 className="text-[#EDE7F6] text-lg font-semibold tracking-wide">Checkout</h1>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
           <Card className="bg-white shadow-sm border rounded-xl">
             <CardHeader>
               <CardTitle className="text-base tracking-wide text-[#2B2B2B]">Identifique-se</CardTitle>
@@ -231,7 +235,7 @@ const PaymentPage = () => {
                 </label>
               </div>
               <Button
-                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:opacity-95 font-semibold"
                 onClick={handleGeneratePayment}
                 disabled={sellerBlocked || !emailValid || !nameValid || !acceptedTerms}
               >
@@ -261,6 +265,7 @@ const PaymentPage = () => {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       ) : (
         <div className="mx-auto max-w-3xl flex items-center justify-center">
