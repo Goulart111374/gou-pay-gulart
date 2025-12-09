@@ -36,7 +36,8 @@ export default function App() {
   const baseUrl = (import.meta.env.BASE_URL as string) || "/";
   const basename = new URL(baseUrl, window.location.origin).pathname.replace(/\/$/, "");
   return (
-    <BrowserRouter basename="/admin">
+    <BrowserRouter basename={basename}
+    >
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
