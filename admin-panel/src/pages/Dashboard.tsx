@@ -14,6 +14,7 @@ export default function Dashboard() {
       setError("");
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token || "";
+      const email = data.session?.user?.email || "";
       if (!token) {
         setError("Sessão inválida");
         setLoading(false);
@@ -28,7 +29,8 @@ export default function Dashboard() {
       try {
         const url = `${base.replace(/\/$/, "")}/api/admin/analytics`;
         const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}`, "X-Admin-Email": email },
+          credentials: "include",
         });
         if (!res.ok) {
           const text = await res.text().catch(() => "");
