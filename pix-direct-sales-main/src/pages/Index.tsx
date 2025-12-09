@@ -19,9 +19,11 @@ const Index = () => {
     }
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
+        const el = entry.target as HTMLElement;
         if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          io.unobserve(entry.target);
+          el.classList.add('in-view');
+        } else {
+          el.classList.remove('in-view');
         }
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
