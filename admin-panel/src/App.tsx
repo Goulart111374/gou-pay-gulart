@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Accounts from "./pages/Accounts";
+import Subscriptions from "./pages/Subscriptions";
 import Layout from "./components/Layout";
 import { useEffect, useState } from "react";
 import { supabase, SUPABASE_CONFIGURED } from "./integrations/supabase/client";
@@ -64,6 +65,16 @@ export default function App() {
             <Protected>
               <Layout>
                 <Accounts />
+              </Layout>
+            </Protected>
+          }
+        />
+        <Route
+          path="/assinaturas"
+          element={
+            <Protected>
+              <Layout>
+                <Subscriptions />
               </Layout>
             </Protected>
           }

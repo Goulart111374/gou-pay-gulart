@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Package, Users } from "lucide-react";
+import { LogOut, Package, Users, Rocket } from "lucide-react";
 import { supabase } from "../integrations/supabase/client";
 import { Toaster } from "sonner";
 
@@ -9,6 +9,7 @@ export default function Layout({ children }: { children: JSX.Element }) {
     { to: "/", label: "Dashboard" },
     { to: "/produtos", label: "Todos os Produtos", icon: Package },
     { to: "/contas", label: "Todas as Contas", icon: Users },
+    { to: "/assinaturas", label: "Assinaturas", icon: Rocket },
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", minHeight: "100vh" }}>
