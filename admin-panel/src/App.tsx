@@ -2,19 +2,28 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { useEffect, useState } from "react";
-import { supabase } from "./integrations/supabase/client";
+import { supabase, SUPABASE_CONFIGURED } from "./integrations/supabase/client";
 
 function Protected({ children }: { children: JSX.Element }) {
   const [ok, setOk] = useState<boolean | null>(null);
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      const email = data.session?.user?.email?.toLowerCase() || "";
-      const allowedRaw = (import.meta.env.VITE_ADMIN_EMAILS as string) || "";
-      const allowed = allowedRaw.split(",").map((s) => s.trim().toLowerCase());
-      setOk(!!email && allowed.includes(email));
+      if (!SUPABASE_CONFIGURED) {
+        setOk(false);
+        return;
+      }
+      try {
+        const { data } = await supabase.auth.getSession();
+        const email = data.session?.user?.email?.toLowerCase() || "";
+        const allowedRaw = (import.meta.env.VITE_ADMIN_EMAILS as string) || "";
+        const allowed = allowedRaw.split(",").map((s) => s.trim().toLowerCase());
+        setOk(!!email && allowed.includes(email));
+      } catch {
+        setOk(false);
+      }
     })();
   }, []);
+  if (!SUPABASE_CONFIGURED) return <div style={{ padding: 24 }}>Configuração do Supabase ausente</div>;
   if (ok === null) return <div style={{ padding: 24 }}>Verificando acesso...</div>;
   return ok ? children : <Navigate to="/login" replace />;
 }
