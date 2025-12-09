@@ -1,0 +1,81 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Compute repo name
+        id: repo
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+
+      - name: Install admin-panel
+        run: npm install --prefix admin-panel
+
+      - name: Build admin-panel
+        run: npx --prefix admin-panel vite build --base=/${{ env.REPO_NAME }}/admin/
+
+      - name: Install pix-direct-sales-main
+        run: npm install --prefix pix-direct-sales-main
+
+      - name: Build pix-direct-sales-main
+        run: npx --prefix pix-direct-sales-main vite build --base=/${{ env.REPO_NAME }}/
+
+      - name: Bundle admin into main dist
+        run: |
+          mkdir -p pix-direct-sales-main/dist/admin
+          cp -r admin-panel/dist/* pix-direct-sales-main/dist/admin/
+
+      - name: Add 404 fallback for SPA and admin
+        run: |
+          cat > pix-direct-sales-main/dist/404.html << 'EOF'
+          <!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex"></head><body><script>
+          (function(){
+            var BASE='/${REPO_NAME}/';
+            var p=location.pathname;
+            if(p.indexOf(BASE+'admin')===0){location.replace(BASE+'admin/');}
+            else{location.replace(BASE);} 
+          })();
+          </script></body></html>
+          EOF
+        env:
+          REPO_NAME: ${{ env.REPO_NAME }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "pix-direct-sales-main/dist"
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { data, error } = await auth.supabase
       .from("profiles")
-      .select("id,email,name")
+      .select("id,email,name,created_at")
       .order("created_at", { ascending: false });
     if (error) return res.status(500).json({ error: "Failed to load users" });
     return res.status(200).json({ users: data || [] });
