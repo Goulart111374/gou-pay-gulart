@@ -17,6 +17,7 @@ export default function Subscriptions() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actingId, setActingId] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -114,6 +115,75 @@ export default function Subscriptions() {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #3a3a3e", color: badge.color }}>{badge.label}</span>
+                {s.status === "active" ? (
+                  <button
+                    disabled={actingId === s.id}
+                    onClick={async () => {
+                      if (!window.confirm("Desativar esta assinatura?")) return;
+                      try {
+                        setActingId(s.id);
+                        const { data } = await supabase.auth.getSession();
+                        const token = data.session?.access_token || "";
+                        const email = data.session?.user?.email || "";
+                        if (!token) throw new Error("Sessão inválida");
+                        const base = (import.meta.env.VITE_ADMIN_API_BASE as string) || "";
+                        if (!base) throw new Error("VITE_ADMIN_API_BASE ausente");
+                        const url = `${base.replace(/\/$/, "")}/api/admin/subscriptions`;
+                        const resp = await fetch(url, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Admin-Email": email },
+                          body: JSON.stringify({ id: s.id, action: "deactivate" }),
+                          mode: "cors",
+                        });
+                        const json = await resp.json().catch(() => ({}));
+                        if (!resp.ok) throw new Error(typeof json.error === "string" ? json.error : "Falha ao desativar");
+                        toast.success("Assinatura desativada");
+                        setItems((prev) => prev.map((it) => (it.id === s.id ? { ...it, status: json.subscription?.status || "inactive", expires_at: json.subscription?.expires_at ?? it.expires_at } : it)));
+                      } catch (e: any) {
+                        toast.error(e?.message || "Erro ao desativar assinatura");
+                      } finally {
+                        setActingId("");
+                      }
+                    }}
+                    style={{ height: 32, borderRadius: 8, background: "#2a2a2e", color: "#eee", border: "1px solid #3a3a3e", cursor: actingId === s.id ? "not-allowed" : "pointer", padding: "0 12px" }}
+                  >
+                    Desativar
+                  </button>
+                ) : (
+                  <button
+                    disabled={actingId === s.id}
+                    onClick={async () => {
+                      if (!window.confirm("Ativar esta assinatura por 30 dias?")) return;
+                      try {
+                        setActingId(s.id);
+                        const { data } = await supabase.auth.getSession();
+                        const token = data.session?.access_token || "";
+                        const email = data.session?.user?.email || "";
+                        if (!token) throw new Error("Sessão inválida");
+                        const base = (import.meta.env.VITE_ADMIN_API_BASE as string) || "";
+                        if (!base) throw new Error("VITE_ADMIN_API_BASE ausente");
+                        const url = `${base.replace(/\/$/, "")}/api/admin/subscriptions`;
+                        const resp = await fetch(url, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Admin-Email": email },
+                          body: JSON.stringify({ id: s.id, action: "activate" }),
+                          mode: "cors",
+                        });
+                        const json = await resp.json().catch(() => ({}));
+                        if (!resp.ok) throw new Error(typeof json.error === "string" ? json.error : "Falha ao ativar");
+                        toast.success("Assinatura ativada");
+                        setItems((prev) => prev.map((it) => (it.id === s.id ? { ...it, status: json.subscription?.status || "active", expires_at: json.subscription?.expires_at ?? it.expires_at } : it)));
+                      } catch (e: any) {
+                        toast.error(e?.message || "Erro ao ativar assinatura");
+                      } finally {
+                        setActingId("");
+                      }
+                    }}
+                    style={{ height: 32, borderRadius: 8, background: "#1f6feb", color: "#fff", border: "1px solid #3a3a3e", cursor: actingId === s.id ? "not-allowed" : "pointer", padding: "0 12px" }}
+                  >
+                    Ativar
+                  </button>
+                )}
               </div>
             </div>
           );

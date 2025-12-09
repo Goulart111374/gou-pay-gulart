@@ -36,21 +36,52 @@ async function authorize(req: VercelRequest) {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,PATCH,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Csrf-Token,X-Admin-Email");
   if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
   const auth = await authorize(req);
   if (!auth.ok) return res.status(auth.status).json({ error: "Unauthorized" });
-  try {
-    const { data, error } = await auth.supabase
-      .from("subscriptions")
-      .select("id,user_id,status,expires_at,created_at,updated_at")
-      .order("created_at", { ascending: false });
-    if (error) return res.status(500).json({ error: "Failed to load subscriptions" });
-    return res.status(200).json({ subscriptions: data || [] });
-  } catch (e: any) {
-    return res.status(500).json({ error: e?.message || "Unexpected error" });
+  if (req.method === "GET") {
+    try {
+      const { data, error } = await auth.supabase
+        .from("subscriptions")
+        .select("id,user_id,status,expires_at,created_at,updated_at")
+        .order("created_at", { ascending: false });
+      if (error) return res.status(500).json({ error: "Failed to load subscriptions" });
+      return res.status(200).json({ subscriptions: data || [] });
+    } catch (e: any) {
+      return res.status(500).json({ error: e?.message || "Unexpected error" });
+    }
   }
-}
 
+  if (req.method === "PATCH") {
+    try {
+      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+      const { id, action } = body as { id?: string; action?: string };
+      if (!id || !action) return res.status(400).json({ error: "Missing id or action" });
+      const now = new Date();
+      let update: Record<string, any> = { updated_at: now.toISOString() };
+      if (action === "activate") {
+        const exp = new Date(now);
+        exp.setDate(exp.getDate() + 30);
+        update = { ...update, status: "active", activated_at: now.toISOString(), expires_at: exp.toISOString() };
+      } else if (action === "deactivate") {
+        update = { ...update, status: "inactive" };
+      } else {
+        return res.status(400).json({ error: "Invalid action" });
+      }
+      const { data, error } = await auth.supabase
+        .from("subscriptions")
+        .update(update)
+        .eq("id", id)
+        .select("id,user_id,status,expires_at,created_at,updated_at")
+        .maybeSingle();
+      if (error) return res.status(500).json({ error: "Failed to update subscription" });
+      return res.status(200).json({ ok: true, subscription: data });
+    } catch (e: any) {
+      return res.status(500).json({ error: e?.message || "Unexpected error" });
+    }
+  }
+
+  return res.status(405).json({ error: "Method not allowed" });
+}
