@@ -265,7 +265,7 @@ const Index = () => {
 
       <footer className="border-t border-[#8A2BE2]/30 py-8">
         <div className="mx-auto max-w-6xl px-4 text-center text-[#9A9A9A]">
-          <p>© 2024 PIX Direct Sales. Todos os direitos reservados.</p>
+          <p>© 2025 GouPay. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
