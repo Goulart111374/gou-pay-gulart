@@ -3,6 +3,7 @@
   "buildCommand": "npm ci --prefix pix-direct-sales-main && npm run build --prefix pix-direct-sales-main",
   "outputDirectory": "pix-direct-sales-main/dist",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
