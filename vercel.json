@@ -1,6 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "set -e; npm install --prefix admin-panel && npm run build --prefix admin-panel || echo 'admin-panel build failed'; npm install --prefix pix-direct-sales-main && npm run build --prefix pix-direct-sales-main; if [ -d admin-panel/dist ]; then mkdir -p pix-direct-sales-main/dist/admin && cp -r admin-panel/dist/* pix-direct-sales-main/dist/admin/; fi",
+  "installCommand": "npm install --prefix pix-direct-sales-main && npm install --prefix admin-panel",
+  "buildCommand": "npm run build --prefix pix-direct-sales-main && npm run build --prefix admin-panel && mkdir -p pix-direct-sales-main/dist/admin && cp -r admin-panel/dist/* pix-direct-sales-main/dist/admin/",
   "outputDirectory": "pix-direct-sales-main/dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
