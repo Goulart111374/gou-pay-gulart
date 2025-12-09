@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Rocket, Check, QrCode, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { getReminderSchedule, shouldSchedule, markScheduled } from "@/utils/subscription";
 
 const Subscription = () => {
   const navigate = useNavigate();
@@ -116,24 +117,19 @@ const Subscription = () => {
 
   useEffect(() => {
     if (!expiresAt) return;
-    const end = new Date(expiresAt).getTime();
-    const now = Date.now();
-    const remaining = end - now;
-    if (remaining <= 0) return;
-
-    let t: number | undefined;
-    if (remaining <= 10 * 60_000) {
-      const ms = remaining - 60_000;
-      if (ms > 0) t = window.setTimeout(() => toast.info("Seu plano expira em 1 minuto"), ms);
-    } else if (remaining >= 24 * 60 * 60_000) {
-      const ms = remaining - 24 * 60 * 60_000;
-      t = window.setTimeout(() => toast.info("Seu plano expira em 24 horas"), ms);
-    } else {
-      const ms = remaining - 60 * 60_000;
-      if (ms > 0) t = window.setTimeout(() => toast.info("Seu plano expira em 1 hora"), ms);
-    }
-    return () => { if (t) clearTimeout(t); };
-  }, [expiresAt]);
+    const expired = new Date(expiresAt) <= new Date();
+    const isActive = status === "active" && !expired;
+    if (!isActive) return;
+    if (!shouldSchedule(expiresAt)) return;
+    const schedule = getReminderSchedule(expiresAt);
+    const timers = schedule.map((i) => {
+      const ms = i.at - Date.now();
+      if (ms <= 0) return -1 as number;
+      return window.setTimeout(() => toast.info(i.label), ms);
+    }).filter((id) => id !== -1);
+    markScheduled(expiresAt);
+    return () => { for (const id of timers) clearTimeout(id); };
+  }, [expiresAt, status]);
 
   if (loading) {
     return (

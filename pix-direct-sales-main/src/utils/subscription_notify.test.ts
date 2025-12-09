@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeMonthlyExpiry, shouldNotify, formatRemainingMessage } from "./subscription";
+import { computeMonthlyExpiry, formatRemainingMessage, shouldShowUpgradeTabNotifications, getReminderSchedule, shouldSchedule, markScheduled, type SimpleStore } from "./subscription";
 
 describe("subscription notification", () => {
   it("computes monthly expiry 30 days after activation", () => {
@@ -9,13 +9,36 @@ describe("subscription notification", () => {
     expect(Math.round(diff / (24 * 60 * 60_000))).toBe(30);
   });
 
-  it("notifies only when 7 days or less remain", () => {
-    const eightDays = 8 * 24 * 60 * 60_000;
-    const sevenDays = 7 * 24 * 60 * 60_000;
-    const sixDays = 6 * 24 * 60 * 60_000;
-    expect(shouldNotify(eightDays)).toBe(false);
-    expect(shouldNotify(sevenDays)).toBe(true);
-    expect(shouldNotify(sixDays)).toBe(true);
+  it("suppress upgrade notifications when subscription is active", () => {
+    const info = { status: "active", expires_at: new Date(Date.now() + 5 * 24 * 60 * 60_000).toISOString() };
+    expect(shouldShowUpgradeTabNotifications(info)).toBe(false);
+  });
+
+  it("schedules reminders exactly 3 days and 1 day before", () => {
+    const now = new Date("2025-12-01T00:00:00.000Z").getTime();
+    const end = new Date(now + 30 * 24 * 60 * 60_000).toISOString();
+    const sched = getReminderSchedule(end);
+    expect(sched.length).toBe(2);
+    const labels = sched.map((s) => s.label.toLowerCase());
+    expect(labels).toContain("sua assinatura expira em 3 dias");
+    expect(labels).toContain("sua assinatura expira em 1 dia");
+    const atTimes = sched.map((s) => s.at);
+    const expected3d = new Date(end).getTime() - 3 * 24 * 60 * 60_000;
+    const expected1d = new Date(end).getTime() - 24 * 60 * 60_000;
+    expect(atTimes).toContain(expected3d);
+    expect(atTimes).toContain(expected1d);
+  });
+
+  it("does not reschedule reminders repeatedly for same expiration", () => {
+    const mem: Record<string, string> = {};
+    const store: SimpleStore = {
+      getItem(k) { return mem[k] ?? null; },
+      setItem(k, v) { mem[k] = v; },
+    };
+    const exp = new Date("2025-12-31T00:00:00.000Z").toISOString();
+    expect(shouldSchedule(exp, store)).toBe(true);
+    markScheduled(exp, store);
+    expect(shouldSchedule(exp, store)).toBe(false);
   });
 
   it("formats remaining message correctly", () => {
@@ -32,4 +55,3 @@ describe("subscription notification", () => {
     expect(msgMinutes.toLowerCase()).toContain("15 minuto");
   });
 });
-

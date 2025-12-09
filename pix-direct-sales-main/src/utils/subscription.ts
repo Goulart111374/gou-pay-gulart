@@ -85,3 +85,39 @@ export function formatRemainingMessage(remainingMs: number): string {
   const m = Math.ceil(remainingMs / minute);
   return `Seu plano expira em ${m} minuto${m > 1 ? "s" : ""}`;
 }
+
+export function shouldShowUpgradeTabNotifications(info: SubscriptionInfo | null): boolean {
+  return !isSubscriptionActive(info);
+}
+
+export function getReminderSchedule(expiresAt: string | Date): Array<{ label: string; at: number }> {
+  const end = typeof expiresAt === "string" ? new Date(expiresAt).getTime() : new Date(expiresAt).getTime();
+  const day = 24 * 60 * 60_000;
+  return [
+    { label: "Sua assinatura expira em 3 dias", at: end - 3 * day },
+    { label: "Sua assinatura expira em 1 dia", at: end - 1 * day },
+  ].filter((i) => i.at > Date.now());
+}
+
+export type SimpleStore = { getItem: (k: string) => string | null; setItem: (k: string, v: string) => void };
+
+function getStore(): SimpleStore | null {
+  const w: unknown = typeof window !== "undefined" ? window : null;
+  const ls = (w as { localStorage?: SimpleStore } | null)?.localStorage;
+  if (ls) return ls;
+  return null;
+}
+
+export function shouldSchedule(expiresAt: string, store?: SimpleStore): boolean {
+  const s = store || getStore();
+  if (!s) return true;
+  const key = `subNotifScheduled:${expiresAt}`;
+  return !s.getItem(key);
+}
+
+export function markScheduled(expiresAt: string, store?: SimpleStore): void {
+  const s = store || getStore();
+  if (!s) return;
+  const key = `subNotifScheduled:${expiresAt}`;
+  s.setItem(key, "1");
+}
