@@ -21,7 +21,7 @@ const Subscription = () => {
   const [paymentId, setPaymentId] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "trial">("monthly");
-  const enableTrial = false;
+  const enableTrial = true;
 
   useEffect(() => {
     const init = async () => {
