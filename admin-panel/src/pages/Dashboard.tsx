@@ -30,7 +30,8 @@ export default function Dashboard() {
         const url = `${base.replace(/\/$/, "")}/api/admin/analytics`;
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}`, "X-Admin-Email": email },
-          credentials: "include",
+          mode: "cors",
+          cache: "no-store",
         });
         if (!res.ok) {
           const text = await res.text().catch(() => "");
