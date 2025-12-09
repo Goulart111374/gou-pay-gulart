@@ -19,12 +19,21 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
-      const base = (import.meta.env.VITE_ADMIN_API_BASE as string) || window.location.origin;
+      const base = (import.meta.env.VITE_ADMIN_API_BASE as string) || "";
+      if (!base) {
+        setError("Defina VITE_ADMIN_API_BASE nas variáveis do projeto");
+        setLoading(false);
+        return;
+      }
       try {
-        const res = await fetch(`${base}/api/admin/analytics`, {
+        const url = `${base.replace(/\/$/, "")}/api/admin/analytics`;
+        const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Falha ao carregar métricas");
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`Falha ao carregar métricas (${res.status}). ${text || url}`);
+        }
         const json = await res.json();
         setStats({ users: json.users || 0, products: json.products || 0, sales: json.sales || 0, revenue: json.revenue || 0 });
       } catch (e: any) {
