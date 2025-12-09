@@ -91,6 +91,27 @@ All colors MUST be HSL.
   }
 }
 
+.fade-on-scroll {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--stagger, 0ms);
+  will-change: opacity, transform;
+}
+
+.fade-on-scroll.in-view {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-on-scroll {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

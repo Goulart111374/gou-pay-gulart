@@ -1,10 +1,33 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Banknote, ArrowRightLeft, Library, Download, QrCode, Shield, User, Palette, CheckCircle, PlayCircle, Users, Ban, RefreshCcw, Lock } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.fade-on-scroll'));
+    items.forEach((el, i) => {
+      el.style.setProperty('--stagger', `${Math.min(i * 80, 400)}ms`);
+      if (reduce) el.classList.add('in-view');
+    });
+    if (reduce || !(window as any).IntersectionObserver) {
+      items.forEach((el) => el.classList.add('in-view'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    items.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div className="min-h-screen text-white overflow-x-hidden site-primary-bg">
@@ -40,10 +63,10 @@ const Index = () => {
                   <div className="h-2 w-2 rounded-full bg-[#8A2BE2]"></div>
                   <span>Plataforma em crescimento</span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+                <h1 className="fade-on-scroll text-4xl md:text-6xl font-extrabold leading-tight">
                   <span className="block">Faça suas vendas sem pagar taxas Venda com a GouPay.</span>
                 </h1>
-                <p className="text-lg md:text-xl text-[#CFCFCF] mt-6 max-w-xl">
+                <p className="fade-on-scroll text-lg md:text-xl text-[#CFCFCF] mt-6 max-w-xl">
                   Uma plataforma feita para quem quer alta conversão, aprovação automática e venda imediata direto no banco, sem depender da plataforma.
                 </p>
                 <div className="mt-8 hidden md:flex flex-col sm:flex-row gap-4">
@@ -69,7 +92,7 @@ const Index = () => {
                     <div className="mt-1 text-xs text-[#9A9A9A]">+23.5%</div>
                   </div>
                 </div>
-                <img src="https://i.imgur.com/vtcLGj6.png" alt="Visão geral da plataforma" className="w-full h-auto rounded-xl shadow-none md:scale-[1.2] transform-gpu origin-center mobile-hero-img" loading="lazy" referrerPolicy="no-referrer" />
+                <img src="https://i.imgur.com/vtcLGj6.png" alt="Visão geral da plataforma" className="fade-on-scroll w-full h-auto rounded-xl shadow-none md:scale-[1.2] transform-gpu origin-center mobile-hero-img" loading="lazy" referrerPolicy="no-referrer" />
                 <div className="mt-6 flex md:hidden flex-col gap-4 items-stretch">
                   <Button className="bg-gradient-to-r from-[#8A2BE2] to-[#D34FE2] text-black font-semibold hover:opacity-90 px-6 py-6 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A2BE2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A1A] active:scale-[0.99] transition" onClick={() => navigate("/auth?signup=1")}>
                     Começar gratuitamente
@@ -92,7 +115,7 @@ const Index = () => {
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Diferenciais</h2>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-              <Card className="bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-2">
+              <Card className="fade-on-scroll bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-2">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-[#8A2BE2]/20 flex items-center justify-center mb-3"><ArrowRightLeft className="h-6 w-6 text-[#8A2BE2]" /></div>
                   <CardTitle>Integração Bancária Direta</CardTitle>
@@ -106,7 +129,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-2">
+              <Card className="fade-on-scroll bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-2">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-[#8A2BE2]/20 flex items-center justify-center mb-3"><CheckCircle className="h-6 w-6 text-[#8A2BE2]" /></div>
                   <CardTitle>Recebimento Instantâneo</CardTitle>
@@ -120,7 +143,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-2">
+              <Card className="fade-on-scroll bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-2">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-[#8A2BE2]/20 flex items-center justify-center mb-3"><PlayCircle className="h-6 w-6 text-[#8A2BE2]" /></div>
                   <CardTitle>Área de Membros Premium</CardTitle>
@@ -135,7 +158,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-3">
+              <Card className="fade-on-scroll bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-3">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-[#8A2BE2]/20 flex items-center justify-center mb-3"><QrCode className="h-6 w-6 text-[#8A2BE2]" /></div>
                   <CardTitle>Venda Sem Checkout</CardTitle>
@@ -149,7 +172,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-3">
+              <Card className="fade-on-scroll bg-[#232323] border-[#8A2BE2]/20 hover:border-[#8A2BE2]/40 transition transform hover:-translate-y-1 hover:shadow-2xl md:col-span-3">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-[#8A2BE2]/20 flex items-center justify-center mb-3"><Ban className="h-6 w-6 text-[#8A2BE2]" /></div>
                   <CardTitle>Sem Bloqueios ou Retenção</CardTitle>
@@ -173,10 +196,10 @@ const Index = () => {
           <div className="mx-auto max-w-6xl px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-20 items-center">
               <div>
-                <h2 className="text-5xl md:text-6xl font-bold mb-4">
+                <h2 className="fade-on-scroll text-5xl md:text-6xl font-bold mb-4">
                   Área de Membros <span className="text-[#D34FE2]">Premium</span>
                 </h2>
-                <p className="text-[#CFCFCF] text-xl md:text-2xl mb-8">
+                <p className="fade-on-scroll text-[#CFCFCF] text-xl md:text-2xl mb-8">
                   Ofereça aos seus clientes uma experiência de acesso profissional e organizada, similar às principais plataformas de streaming.
                 </p>
                 <div className="space-y-4 text-[#CFCFCF] text-lg">
@@ -192,13 +215,13 @@ const Index = () => {
                 </Button>
               </div>
               <div className="relative">
-                <div className="members-card rounded-2xl border border-white/10 shadow-2xl p-6">
+                <div className="fade-on-scroll members-card rounded-2xl border border-white/10 shadow-2xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-lg font-semibold">Meus Produtos</span>
                     <span className="px-3 py-1 rounded-full bg-[#8A2BE2]/25 text-[#D34FE2] text-xs">3 ativos</span>
                   </div>
                   <div className="space-y-4">
-                    <div className="members-item flex items-center justify-between p-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#181818] to-[#1F1F1F]">
+                    <div className="fade-on-scroll members-item flex items-center justify-between p-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#181818] to-[#1F1F1F]">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-[#8A2BE2]/20 flex items-center justify-center"><PlayCircle className="h-6 w-6 text-[#D34FE2]" /></div>
                         <div>
@@ -208,7 +231,7 @@ const Index = () => {
                       </div>
                       <button className="text-[#CFCFCF] font-medium">Acessar</button>
                     </div>
-                    <div className="members-item flex items-center justify-between p-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#181818] to-[#1F1F1F]">
+                    <div className="fade-on-scroll members-item flex items-center justify-between p-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#181818] to-[#1F1F1F]">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-[#8A2BE2]/20 flex items-center justify-center"><Download className="h-6 w-6 text-[#D34FE2]" /></div>
                         <div>
@@ -218,7 +241,7 @@ const Index = () => {
                       </div>
                       <button className="text-[#CFCFCF] font-medium">Acessar</button>
                     </div>
-                    <div className="members-item flex items-center justify-between p-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#181818] to-[#1F1F1F]">
+                    <div className="fade-on-scroll members-item flex items-center justify-between p-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#181818] to-[#1F1F1F]">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-[#8A2BE2]/20 flex items-center justify-center"><Lock className="h-6 w-6 text-[#D34FE2]" /></div>
                         <div>
