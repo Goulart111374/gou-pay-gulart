@@ -10,6 +10,10 @@
 - Em deploy na Vercel, mantenha o rewrite que preserva `/api/*`.
 - Se front-end e API estiverem em origens distintas, defina `VITE_PUBLIC_API_BASE` apontando para a base pública da API.
 
+## Localização no sistema
+- A configuração do Meta Pixel e Token da API foi movida para a aba `Dashboard > Integração`.
+- A aba `Pagamentos` permanece dedicada à integração do Mercado Pago (Access Token).
+
 ## Credenciais e Segurança
 - O token é armazenado no cliente com criptografia básica; para produção, prefira manter tokens no backend.
 - Use tokens com escopo suficiente para enviar eventos ao Pixel correspondente.

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Package, HelpCircle, LogOut, CreditCard, Settings as SettingsIcon, Users } from "lucide-react";
+import { DollarSign, Package, HelpCircle, LogOut, CreditCard, Settings as SettingsIcon, Users, Facebook } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -410,6 +410,13 @@ const Dashboard = () => {
         <Button 
           variant="ghost" 
           className="justify-start gap-2 bg-transparent hover:bg-transparent border-none rounded-none shadow-none h-10 px-2"
+          onClick={() => navigate("/dashboard/integration")}
+        >
+          <Facebook className="h-4 w-4" /> {desktopSidebarCollapsed ? null : <span className="text-foreground">Integração</span>}
+        </Button>
+        <Button 
+          variant="ghost" 
+          className="justify-start gap-2 bg-transparent hover:bg-transparent border-none rounded-none shadow-none h-10 px-2"
           onClick={() => navigate("/dashboard/terms")}
         >
           {desktopSidebarCollapsed ? null : <span className="text-foreground">Termos</span>}
@@ -454,6 +461,10 @@ const Dashboard = () => {
           <Button variant="ghost" className={`justify-start h-12 px-2 gap-3`} onClick={() => { navigate("/dashboard/settings"); setMobileSidebarExpanded(false); }}>
             <CreditCard className="h-5 w-5" />
             {mobileSidebarExpanded && <span>Pagamentos</span>}
+          </Button>
+          <Button variant="ghost" className={`justify-start h-12 px-2 gap-3`} onClick={() => { navigate("/dashboard/integration"); setMobileSidebarExpanded(false); }}>
+            <Facebook className="h-5 w-5" />
+            {mobileSidebarExpanded && <span>Integração</span>}
           </Button>
           <Button variant="ghost" className={`justify-start h-12 px-2 gap-3`} onClick={() => { navigate("/dashboard/terms"); setMobileSidebarExpanded(false); }}>
             {mobileSidebarExpanded && <span>Termos</span>}
