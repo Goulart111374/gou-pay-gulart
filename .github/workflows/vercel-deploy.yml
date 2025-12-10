@@ -1,0 +1,43 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        working-directory: ./pix-direct-sales-main
+        run: npm ci
+      - name: Build
+        working-directory: ./pix-direct-sales-main
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: npm run build
+      - name: Vercel Deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./pix-direct-sales-main
+          vercel-args: "--prod"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          WEBHOOK_BASE_URL: ${{ secrets.WEBHOOK_BASE_URL }}
+          MP_PLATFORM_ACCESS_TOKEN: ${{ secrets.MP_PLATFORM_ACCESS_TOKEN }}
+          FB_GRAPH_VERSION: ${{ secrets.FB_GRAPH_VERSION }}
+          FB_TEST_EVENT_CODE: ${{ secrets.FB_TEST_EVENT_CODE }}
+
