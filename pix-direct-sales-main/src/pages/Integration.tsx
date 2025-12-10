@@ -13,6 +13,7 @@ import { Tables } from "@/integrations/supabase/types";
 
 const Integration = () => {
   const navigate = useNavigate();
+  const PLACEHOLDER = "••••••••••••••••";
   const [fbPixelId, setFbPixelIdInput] = useState("");
   const [fbToken, setFbTokenInput] = useState("");
   const [products, setProducts] = useState<Tables<"products">[]>([]);
@@ -30,7 +31,7 @@ const Integration = () => {
       const savedPid = getFbPixelId();
       const savedTok = await getFbApiToken();
       if (savedPid) setFbPixelIdInput(savedPid);
-      if (savedTok) setFbTokenInput("••••••••••••••••");
+      if (savedTok) setFbTokenInput(PLACEHOLDER);
       await loadData(session.user.id);
     };
     init();
@@ -43,7 +44,9 @@ const Integration = () => {
 
   const handleSaveIntegration = async () => {
     const pixelValid = /^[0-9]{8,20}$/.test(fbPixelId);
-    const tokenValid = fbToken && fbToken !== "••••••••••••••••" && fbToken.length >= 20;
+    const tokenMasked = fbToken === PLACEHOLDER;
+    const tokenToUse = tokenMasked ? (await getFbApiToken()) : fbToken;
+    const tokenValid = !!tokenToUse && tokenToUse.length >= 20;
     if (!selectedProductId) { toast.error("Selecione um produto"); return; }
     if (!pixelValid) { toast.error("ID do Pixel inválido"); return; }
     if (!tokenValid) { toast.error("Token API inválido"); return; }
@@ -52,9 +55,9 @@ const Integration = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { toast.error("Você precisa estar logado"); navigate("/auth"); return; }
       await setFbPixelId(fbPixelId);
-      await setFbApiToken(fbToken);
+      await setFbApiToken(tokenToUse!);
       const name = `Pixel ${fbPixelId}`;
-      const packed = await packApiToken(fbToken);
+      const packed = await packApiToken(tokenToUse!);
       const { data: existing } = await supabase.from("fb_configs").select("id").eq("user_id", session.user.id).eq("pixel_id", fbPixelId).limit(1).maybeSingle();
       let cfgId = existing?.id as string | undefined;
       if (!cfgId) {
@@ -137,7 +140,7 @@ const Integration = () => {
                   <Input id="fb_token" type={showToken ? "text" : "password"} placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} />
                   <Button type="button" variant="outline" onClick={() => setShowToken((v) => !v)}>{showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
                 </div>
-                <div className={`text-xs ${(fbToken && fbToken !== '••••••••••••••••' && fbToken.length >= 20) ? 'text-success' : 'text-destructive'}`}>{(fbToken && fbToken !== '••••••••••••••••' && fbToken.length >= 20) ? "Token válido" : "Token inválido"}</div>
+                <div className={`text-xs ${(fbToken === PLACEHOLDER || (fbToken && fbToken.length >= 20)) ? 'text-success' : 'text-destructive'}`}>{fbToken === PLACEHOLDER ? "Token salvo" : ((fbToken && fbToken.length >= 20) ? "Token válido" : "Token inválido")}</div>
               </div>
 
               <Button onClick={handleSaveIntegration} disabled={loading} className="w-full">Salvar e ativar integração</Button>
