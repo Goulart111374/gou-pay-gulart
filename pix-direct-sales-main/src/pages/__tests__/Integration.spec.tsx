@@ -5,7 +5,7 @@ import { setApiToken, setPixelId } from "@/utils/fb";
 import { beforeAll } from "vitest";
 
 const memStore: Record<string, string> = {};
-// @ts-ignore
+// @ts-expect-error
 globalThis.localStorage = globalThis.localStorage || {
   getItem: (k: string) => (k in memStore ? memStore[k] : null),
   setItem: (k: string, v: string) => { memStore[k] = String(v); },
@@ -13,7 +13,8 @@ globalThis.localStorage = globalThis.localStorage || {
   clear: () => { for (const k of Object.keys(memStore)) delete memStore[k]; },
 };
 
-let Integration: any;
+import type { ComponentType } from "react";
+let Integration: ComponentType | null = null;
 beforeAll(async () => {
   Integration = (await import("../Integration")).default;
 });

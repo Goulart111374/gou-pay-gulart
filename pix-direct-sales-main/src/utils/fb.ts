@@ -57,6 +57,28 @@ export async function setApiToken(token: string) {
   localStorage.setItem(LS_KEYS.tokenEnc, packed);
 }
 
+export async function packApiToken(token: string): Promise<string> {
+  const key = await getCryptoKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(token));
+  const blob = new Uint8Array(enc);
+  const packed = btoa(String.fromCharCode(...iv)) + "." + btoa(String.fromCharCode(...blob));
+  return packed;
+}
+
+export async function unpackApiToken(packed: string): Promise<string | null> {
+  try {
+    const [ivb64, ctb64] = packed.split(".");
+    const iv = Uint8Array.from(atob(ivb64), (c) => c.charCodeAt(0));
+    const ct = Uint8Array.from(atob(ctb64), (c) => c.charCodeAt(0));
+    const key = await getCryptoKey();
+    const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+    return new TextDecoder().decode(dec);
+  } catch {
+    return null;
+  }
+}
+
 export async function getApiToken(): Promise<string | null> {
   const packed = localStorage.getItem(LS_KEYS.tokenEnc);
   if (!packed) return null;

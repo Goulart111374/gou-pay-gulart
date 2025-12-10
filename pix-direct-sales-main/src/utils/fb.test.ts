@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { setPixelId, getPixelId, setApiToken, getApiToken, trackPixelEvent, getLog, sendConversionsAPI } from "./fb";
 
 const memStore: Record<string, string> = {};
-// @ts-ignore
+// @ts-expect-error
 globalThis.localStorage = globalThis.localStorage || {
   getItem: (k: string) => (k in memStore ? memStore[k] : null),
   setItem: (k: string, v: string) => { memStore[k] = String(v); },
@@ -21,9 +21,9 @@ describe("Facebook utils", () => {
 
   it("registra evento via Pixel quando fbq está disponível", async () => {
     await setPixelId("1234567890");
-    // @ts-ignore
+    // @ts-expect-error
     globalThis.window = globalThis.window || {};
-    // @ts-ignore
+    // @ts-expect-error
     window.fbq = vi.fn();
     trackPixelEvent({ name: "PageView", time: Date.now(), sourceUrl: "https://example.com" });
     const log = getLog();
@@ -36,7 +36,7 @@ describe("Facebook utils", () => {
     await setPixelId("1234567890");
     await setApiToken("EA-TEST-TOKEN-1234567890");
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = vi.fn(async () => ({ ok: false, status: 404, text: async () => "" } as any));
+    globalThis.fetch = vi.fn(async () => ({ ok: false, status: 404, text: async () => "" } as unknown as Response));
     await sendConversionsAPI({ name: "Purchase", time: Date.now(), value: 10, currency: "BRL" });
     const queueRaw = localStorage.getItem("fb_event_queue");
     expect(queueRaw && JSON.parse(queueRaw || "[]").length).toBeGreaterThan(0);
