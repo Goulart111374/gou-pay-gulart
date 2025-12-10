@@ -18,6 +18,9 @@ type FbEvent = {
   currency?: string;
 };
 
+const API_BASE = (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_PUBLIC_API_BASE) ? (import.meta as any).env.VITE_PUBLIC_API_BASE as string : "";
+function endpoint(path: string) { return API_BASE ? `${API_BASE}${path}` : path; }
+
 export function getPixelId(): string | null {
   try { return localStorage.getItem(LS_KEYS.pixelId); } catch { return null; }
 }
@@ -103,7 +106,7 @@ export async function sendConversionsAPI(ev: FbEvent) {
     const pid = getPixelId();
     const token = await getApiToken();
     if (!pid || !token) throw new Error('Config ausente');
-    const resp = await fetch('/api/fb-events', {
+    const resp = await fetch(endpoint('/api/fb-events'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pixel_id: pid, token, event: ev }),
     });
@@ -133,7 +136,7 @@ export async function flushQueue() {
   const next: FbEvent[] = [];
   for (const ev of q) {
     try {
-      const resp = await fetch('/api/fb-events', {
+      const resp = await fetch(endpoint('/api/fb-events'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pixel_id: pid, token, event: ev }),
       });
@@ -156,4 +159,3 @@ export function getLog(): LogEntry[] { return readLog(); }
 export function getCampaignFromUrl(u: string): string | undefined {
   try { const url = new URL(u); return url.searchParams.get('utm_campaign') || undefined; } catch { return undefined; }
 }
-

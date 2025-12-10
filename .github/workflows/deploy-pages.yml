@@ -22,6 +22,7 @@ jobs:
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_ADMIN_EMAILS: ${{ vars.VITE_ADMIN_EMAILS }}
       VITE_ADMIN_API_BASE: ${{ vars.VITE_ADMIN_API_BASE }}
+      VITE_PUBLIC_API_BASE: ${{ vars.VITE_PUBLIC_API_BASE }}
       VITE_PUBLIC_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ env.REPO_NAME }}
     steps:
       - name: Checkout
