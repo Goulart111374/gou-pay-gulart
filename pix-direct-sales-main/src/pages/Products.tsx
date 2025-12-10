@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Pencil, Eye } from "lucide-react";
+import { Tables } from "@/integrations/supabase/types";
 import { getCurrentSubscription, isSubscriptionActive, markExpiredIfNeeded } from "@/utils/subscription";
 
 type Product = {
@@ -21,6 +23,7 @@ const Products = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
+  const [assocs, setAssocs] = useState<Tables<"fb_product_configs">[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -39,6 +42,12 @@ const Products = () => {
         toast.error("Erro ao carregar produtos");
       }
       setProducts(data || []);
+      const { data: links } = await supabase
+        .from("fb_product_configs")
+        .select("product_id,is_active")
+        .eq("user_id", userId)
+        .eq("is_active", true);
+      setAssocs(links || []);
       setLoading(false);
     };
     init();
@@ -96,10 +105,20 @@ const Products = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((p) => (
-              <Card key={p.id} className="border-primary/20 hover:border-primary/40 transition">
-                <CardHeader className="pb-0">
+            {products.map((p) => {
+              const active = assocs.some((a) => a.product_id === p.id && a.is_active);
+              return (
+              <Card key={p.id} className="border-primary/20 hover:border-primary/40 transition relative">
+                <CardHeader className="pb-0 flex items-center justify-between">
                   <CardTitle className="text-sm truncate">{p.name}</CardTitle>
+                  {active && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-xs px-2 py-0.5 rounded bg-emerald-600 text-white">Pixel Ativo</span>
+                      </TooltipTrigger>
+                      <TooltipContent>Este produto possui Pixel vinculado e ativo</TooltipContent>
+                    </Tooltip>
+                  )}
                 </CardHeader>
                 <CardContent className="pt-2">
                   <div className="w-full h-[180px] bg-muted rounded overflow-hidden">
@@ -120,7 +139,7 @@ const Products = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );})}
           </div>
         )}
       </main>

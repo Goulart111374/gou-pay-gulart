@@ -17,6 +17,7 @@ const Integration = () => {
   const [fbPixelId, setFbPixelIdInput] = useState("");
   const [fbToken, setFbTokenInput] = useState("");
   const [products, setProducts] = useState<Tables<"products">[]>([]);
+  const [assocs, setAssocs] = useState<Tables<"fb_product_configs">[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [showToken, setShowToken] = useState(false);
@@ -40,6 +41,8 @@ const Integration = () => {
   const loadData = async (userId: string) => {
     const { data: prods } = await supabase.from("products").select("*").eq("user_id", userId).order("created_at", { ascending: false });
     setProducts(prods || []);
+    const { data: links } = await supabase.from("fb_product_configs").select("product_id,is_active").eq("user_id", userId).eq("is_active", true);
+    setAssocs(links || []);
   };
 
   const handleSaveIntegration = async () => {
@@ -108,11 +111,24 @@ const Integration = () => {
               <div className="space-y-3">
                 <div className="text-sm font-medium">1. Seleção do produto</div>
                 <div className="space-y-2">
-                  {products.map((p) => (
-                    <button key={p.id} className={`w-full text-left p-3 border rounded ${selectedProductId === p.id ? "bg-muted border-primary" : "bg-background"}`} onClick={() => setSelectedProductId(p.id)}>
-                      <div className="truncate">{p.name}</div>
-                    </button>
-                  ))}
+                  {products.map((p) => {
+                    const active = assocs.some((a) => a.product_id === p.id && a.is_active);
+                    return (
+                      <button key={p.id} className={`w-full text-left p-3 border rounded ${selectedProductId === p.id ? "bg-muted border-primary" : "bg-background"}`} onClick={() => setSelectedProductId(p.id)}>
+                        <div className="flex items-center justify-between">
+                          <div className="truncate">{p.name}</div>
+                          {active && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-xs px-2 py-0.5 rounded bg-emerald-600 text-white">Pixel Ativo</span>
+                              </TooltipTrigger>
+                              <TooltipContent>Este produto possui Pixel vinculado e ativo</TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                   {products.length === 0 && <div className="text-sm text-muted-foreground">Nenhum produto</div>}
                 </div>
                 <div className={`text-xs ${selectedProductId ? 'text-success' : 'text-muted-foreground'}`}>{selectedProductId ? "Produto selecionado" : "Selecione um produto"}</div>
