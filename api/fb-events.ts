@@ -74,8 +74,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const fb = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const text = await fb.text();
     if (!fb.ok) {
-      let details: unknown = text; try { details = JSON.parse(text); } catch {}
-      return res.status(fb.status).json({ error: "Facebook API error", details });
+      let details: any = text; try { details = JSON.parse(text); } catch {}
+      const msg = (details && typeof details === 'object' && details.error && details.error.message) ? details.error.message : "Facebook API error";
+      return res.status(fb.status).json({ error: msg, details });
     }
     let data: unknown = text; try { data = JSON.parse(text); } catch {}
     return res.status(200).json({ ok: true, data });
