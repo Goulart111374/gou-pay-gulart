@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, Facebook } from "lucide-react";
 import { setApiToken as setFbApiToken, setPixelId as setFbPixelId, getApiToken as getFbApiToken, getPixelId as getFbPixelId, getLog, initPixel, trackPixelEvent, packApiToken } from "@/utils/fb";
@@ -27,6 +28,7 @@ const Integration = () => {
   const [selectedConfigId, setSelectedConfigId] = useState<string>("");
   const [campaignName, setCampaignName] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -122,97 +124,95 @@ const Integration = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-primary/20 shadow-purple">
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Facebook className="h-5 w-5 text-primary" />
-              <CardTitle>Gerenciar Pixels/Tokens</CardTitle>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Facebook className="h-5 w-5 text-primary" />
+                <CardTitle>Integração do Facebook</CardTitle>
+              </div>
+              <div className="w-full max-w-sm">
+                <Input placeholder="Buscar produto" value={query} onChange={(e) => setQuery(e.target.value)} />
+              </div>
             </div>
-            <CardDescription>Cadastre, edite e remova suas configurações do Facebook</CardDescription>
+            <CardDescription>Gerencie Pixels/Tokens e associe por produto e campanha</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="fb_pixel_id">ID Pixel</Label>
-              <Input id="fb_pixel_id" placeholder="ex: 165121022896834653" value={fbPixelId} onChange={(e) => setFbPixelIdInput(e.target.value)} className="border-primary/20" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fb_token">Token Pixel API</Label>
-              <Input id="fb_token" type="password" placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} className="border-primary/20" />
-            </div>
-            <Button onClick={handleCreateConfig} disabled={loading} className="w-full bg-gradient-hero hover:opacity-90 shadow-purple">Salvar</Button>
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Minhas Configurações</h4>
-              <div className="space-y-2">
-                {configs.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma configuração</p>}
-                {configs.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between p-2 border rounded">
-                    <div className="text-sm">{c.name} — Pixel {c.pixel_id}</div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => { setFbPixelIdInput(c.pixel_id); setSelectedConfigId(c.id); setFbTokenInput("••••••••••••••••"); }}>Editar</Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteConfig(c.id)}>Remover</Button>
-                    </div>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1 space-y-3">
+                <div className="text-sm font-medium">Produtos</div>
+                <div className="space-y-2">
+                  {products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())).map((p) => {
+                    const links = assocs.filter((a) => a.product_id === p.id && a.is_active);
+                    const active = links[0];
+                    const cfg = active ? configs.find((x) => x.id === active.fb_config_id) : undefined;
+                    return (
+                      <button key={p.id} className={`w-full text-left p-2 border rounded ${selectedProductId === p.id ? "bg-muted" : "bg-background"}`} onClick={() => setSelectedProductId(p.id)}>
+                        <div className="flex items-center justify-between">
+                          <div className="truncate">{p.name}</div>
+                          {cfg ? <Badge variant="secondary">{cfg.name}</Badge> : <Badge variant="outline">Sem Pixel</Badge>}
+                        </div>
+                        {active?.campaign_name ? <div className="text-xs text-muted-foreground">Campanha {active.campaign_name}</div> : null}
+                      </button>
+                    );
+                  })}
+                  {products.length === 0 && <div className="text-sm text-muted-foreground">Nenhum produto</div>}
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="fb_pixel_id">ID Pixel</Label>
+                    <Input id="fb_pixel_id" placeholder="ex: 165121022896834653" value={fbPixelId} onChange={(e) => setFbPixelIdInput(e.target.value)} />
                   </div>
-                ))}
+                  <div className="space-y-2">
+                    <Label htmlFor="fb_token">Token Pixel API</Label>
+                    <Input id="fb_token" type="password" placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button onClick={handleCreateConfig} disabled={loading}>Salvar Configuração</Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label>Configuração</Label>
+                    <select className="border rounded h-10 px-3 w-full" value={selectedConfigId} onChange={(e) => setSelectedConfigId(e.target.value)}>
+                      <option value="">Selecione</option>
+                      {configs.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Campanha (opcional)</Label>
+                    <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="utm_campaign" />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button onClick={handleAssociate} disabled={loading}>Associar ao Produto Selecionado</Button>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="text-sm font-medium">Minhas Configurações</div>
+                  <div className="space-y-2">
+                    {configs.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma configuração</p>}
+                    {configs.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between p-2 border rounded">
+                        <div className="text-sm">{c.name} — Pixel {c.pixel_id}</div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => { setFbPixelIdInput(c.pixel_id); setSelectedConfigId(c.id); setFbTokenInput("••••••••••••••••"); }}>Editar</Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDeleteConfig(c.id)}>Remover</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        <Card className="border-primary/20 shadow-purple">
-          <CardHeader>
-            <CardTitle>Associar a Produtos</CardTitle>
-            <CardDescription>Vincule Pixel/Token a produtos e campanhas</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Produto</Label>
-              <select className="border rounded h-10 px-3" value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)}>
-                <option value="">Selecione</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label>Configuração</Label>
-              <select className="border rounded h-10 px-3" value={selectedConfigId} onChange={(e) => setSelectedConfigId(e.target.value)}>
-                <option value="">Selecione</option>
-                {configs.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label>Campanha (opcional)</Label>
-              <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="utm_campaign" />
-            </div>
-            <Button onClick={handleAssociate} disabled={loading} className="w-full">Associar</Button>
-
-            <div className="pt-2 border-t border-primary/20">
-              <h4 className="text-sm font-semibold">Status por Produto</h4>
-              <div className="space-y-2">
-                {products.map((p) => {
-                  const links = assocs.filter((a) => a.product_id === p.id && a.is_active);
-                  return (
-                    <div key={p.id} className="p-2 border rounded">
-                      <div className="text-sm font-medium">{p.name}</div>
-                      {links.length === 0 ? (
-                        <div className="text-sm text-muted-foreground">Sem Pixel/Token</div>
-                      ) : (
-                        <div className="text-sm">{links.map((l) => {
-                          const c = configs.find((x) => x.id === l.fb_config_id);
-                          return (<div key={l.id}>{c?.name} — campanha {l.campaign_name || "(todas)"}</div>);
-                        })}</div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
         <Card className="border-primary/20 shadow-purple">
           <CardHeader>
             <div className="flex items-center gap-2">
