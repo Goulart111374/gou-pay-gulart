@@ -5,30 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { ArrowLeft, Facebook } from "lucide-react";
-import { setApiToken as setFbApiToken, setPixelId as setFbPixelId, getApiToken as getFbApiToken, getPixelId as getFbPixelId, getLog, initPixel, trackPixelEvent, packApiToken } from "@/utils/fb";
+import { ArrowLeft, Facebook, Info, Eye, EyeOff } from "lucide-react";
+import { setApiToken as setFbApiToken, setPixelId as setFbPixelId, getApiToken as getFbApiToken, getPixelId as getFbPixelId, initPixel, trackPixelEvent, packApiToken } from "@/utils/fb";
 import { Tables } from "@/integrations/supabase/types";
-
-type FbLogEntry = { name?: string; status?: "success" | "failed"; via?: string; time?: number; sourceUrl?: string; customData?: Record<string, unknown>; value?: number; currency?: string };
 
 const Integration = () => {
   const navigate = useNavigate();
   const [fbPixelId, setFbPixelIdInput] = useState("");
   const [fbToken, setFbTokenInput] = useState("");
-  const [fbStatus, setFbStatus] = useState<"idle" | "connected" | "connected_pixel_only" | "failed">("idle");
-  const [fbLog, setFbLog] = useState<FbLogEntry[]>([]);
-  const [fbSummary, setFbSummary] = useState<{ success: number; failed: number }>({ success: 0, failed: 0 });
-  const [campaigns, setCampaigns] = useState<Record<string, { sent: number; purchases: number }>>({});
   const [products, setProducts] = useState<Tables<"products">[]>([]);
-  const [configs, setConfigs] = useState<Tables<"fb_configs">[]>([]);
-  const [assocs, setAssocs] = useState<Tables<"fb_product_configs">[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
-  const [selectedConfigId, setSelectedConfigId] = useState<string>("");
-  const [campaignName, setCampaignName] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState("");
+  const [showToken, setShowToken] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -42,72 +32,50 @@ const Integration = () => {
       if (savedPid) setFbPixelIdInput(savedPid);
       if (savedTok) setFbTokenInput("••••••••••••••••");
       await loadData(session.user.id);
-      try {
-        const log = getLog();
-        setFbLog(log);
-        const success = log.filter((x) => x.status === "success").length;
-        const failed = log.filter((x) => x.status === "failed").length;
-        setFbSummary({ success, failed });
-        const byCamp: Record<string, { sent: number; purchases: number }> = {};
-        for (const item of log) {
-          const camp = (item?.customData?.campaign as string) || "-";
-          if (!byCamp[camp]) byCamp[camp] = { sent: 0, purchases: 0 };
-          byCamp[camp].sent += item.status === "success" ? 1 : 0;
-          if (item.name === "Purchase" && item.status === "success") byCamp[camp].purchases += 1;
-        }
-        setCampaigns(byCamp);
-      } catch { void 0; }
     };
     init();
   }, [navigate]);
 
-  const handleSaveFacebook = async () => {
+  const loadData = async (userId: string) => {
+    const { data: prods } = await supabase.from("products").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+    setProducts(prods || []);
+  };
+
+  const handleSaveIntegration = async () => {
+    const pixelValid = /^[0-9]{8,20}$/.test(fbPixelId);
+    const tokenValid = fbToken && fbToken !== "••••••••••••••••" && fbToken.length >= 20;
+    if (!selectedProductId) { toast.error("Selecione um produto"); return; }
+    if (!pixelValid) { toast.error("ID do Pixel inválido"); return; }
+    if (!tokenValid) { toast.error("Token API inválido"); return; }
+    setLoading(true);
     try {
-      if (!fbPixelId || !/^[0-9]{8,20}$/.test(fbPixelId)) {
-        toast.error("ID do Pixel inválido");
-        return;
-      }
-      if (fbToken && fbToken !== "••••••••••••••••" && fbToken.length < 20) {
-        toast.error("Token API inválido");
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Você precisa estar logado"); navigate("/auth"); return; }
       await setFbPixelId(fbPixelId);
-      if (fbToken !== "••••••••••••••••") await setFbApiToken(fbToken);
-      toast.success("Facebook Pixel configurado");
-      setFbTokenInput("••••••••••••••••");
-      setFbStatus("idle");
-      const token = await getFbApiToken();
-      const pid = getFbPixelId();
-      try {
-        initPixel();
-        trackPixelEvent({ name: "PageView", time: Date.now(), sourceUrl: window.location.href });
-        setFbStatus("connected");
-      } catch { /* noop */ }
-      if (token && pid) {
-        try {
-          const base = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_PUBLIC_API_BASE || "";
-          const url = base ? `${base}/api/fb-events` : "/api/fb-events";
-          const resp = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pixel_id: pid, token, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
-          });
-          if (!resp.ok) {
-            let msg = "";
-            try { const j = await resp.json(); msg = j?.error || ""; } catch {}
-            if (resp.status === 404 || resp.status === 503) setFbStatus("connected_pixel_only");
-            else {
-              setFbStatus("failed");
-              if (msg) toast.error(String(msg));
-            }
-          }
-        } catch {
-          setFbStatus("connected_pixel_only");
-        }
+      await setFbApiToken(fbToken);
+      const name = `Pixel ${fbPixelId}`;
+      const packed = await packApiToken(fbToken);
+      const { data: existing } = await supabase.from("fb_configs").select("id").eq("user_id", session.user.id).eq("pixel_id", fbPixelId).limit(1).maybeSingle();
+      let cfgId = existing?.id as string | undefined;
+      if (!cfgId) {
+        const { data: created, error: insErr } = await supabase.from("fb_configs").insert({ user_id: session.user.id, name, pixel_id: fbPixelId, token_enc: packed, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }).select("id").single();
+        if (insErr) throw insErr;
+        cfgId = created?.id as string;
+      } else {
+        const { error: updErr } = await supabase.from("fb_configs").update({ token_enc: packed, updated_at: new Date().toISOString() }).eq("id", cfgId).eq("user_id", session.user.id);
+        if (updErr) throw updErr;
       }
+      await supabase.from("fb_product_configs").update({ is_active: false, updated_at: new Date().toISOString() }).eq("user_id", session.user.id).eq("product_id", selectedProductId).eq("campaign_name", null).eq("is_active", true);
+      const { error: linkErr } = await supabase.from("fb_product_configs").insert({ user_id: session.user.id, product_id: selectedProductId, fb_config_id: cfgId!, campaign_name: null, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+      if (linkErr) throw linkErr;
+      initPixel();
+      trackPixelEvent({ name: "PageView", time: Date.now(), sourceUrl: window.location.href });
+      toast.success("Integração ativada");
     } catch (e) {
-      setFbStatus("failed");
-      toast.error("Falha ao conectar ao Facebook");
+      const msg = e instanceof Error ? e.message : "Erro ao salvar";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,163 +91,56 @@ const Integration = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <Card className="border-primary/20 shadow-purple">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Facebook className="h-5 w-5 text-primary" />
-                <CardTitle>Integração do Facebook</CardTitle>
-              </div>
-              <div className="w-full max-w-sm">
-                <Input placeholder="Buscar produto" value={query} onChange={(e) => setQuery(e.target.value)} />
-              </div>
-            </div>
-            <CardDescription>Gerencie Pixels/Tokens e associe por produto e campanha</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1 space-y-3">
-                <div className="text-sm font-medium">Produtos</div>
-                <div className="space-y-2">
-                  {products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())).map((p) => {
-                    const links = assocs.filter((a) => a.product_id === p.id && a.is_active);
-                    const active = links[0];
-                    const cfg = active ? configs.find((x) => x.id === active.fb_config_id) : undefined;
-                    return (
-                      <button key={p.id} className={`w-full text-left p-2 border rounded ${selectedProductId === p.id ? "bg-muted" : "bg-background"}`} onClick={() => setSelectedProductId(p.id)}>
-                        <div className="flex items-center justify-between">
-                          <div className="truncate">{p.name}</div>
-                          {cfg ? <Badge variant="secondary">{cfg.name}</Badge> : <Badge variant="outline">Sem Pixel</Badge>}
-                        </div>
-                        {active?.campaign_name ? <div className="text-xs text-muted-foreground">Campanha {active.campaign_name}</div> : null}
-                      </button>
-                    );
-                  })}
-                  {products.length === 0 && <div className="text-sm text-muted-foreground">Nenhum produto</div>}
-                </div>
-              </div>
-
-              <div className="md:col-span-2 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="fb_pixel_id">ID Pixel</Label>
-                    <Input id="fb_pixel_id" placeholder="ex: 165121022896834653" value={fbPixelId} onChange={(e) => setFbPixelIdInput(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fb_token">Token Pixel API</Label>
-                    <Input id="fb_token" type="password" placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} />
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button onClick={handleCreateConfig} disabled={loading}>Salvar Configuração</Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label>Configuração</Label>
-                    <select className="border rounded h-10 px-3 w-full" value={selectedConfigId} onChange={(e) => setSelectedConfigId(e.target.value)}>
-                      <option value="">Selecione</option>
-                      {configs.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Campanha (opcional)</Label>
-                    <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="utm_campaign" />
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button onClick={handleAssociate} disabled={loading}>Associar ao Produto Selecionado</Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="text-sm font-medium">Minhas Configurações</div>
-                  <div className="space-y-2">
-                    {configs.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma configuração</p>}
-                    {configs.map((c) => (
-                      <div key={c.id} className="flex items-center justify-between p-2 border rounded">
-                        <div className="text-sm">{c.name} — Pixel {c.pixel_id}</div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => { setFbPixelIdInput(c.pixel_id); setSelectedConfigId(c.id); setFbTokenInput("••••••••••••••••"); }}>Editar</Button>
-                          <Button variant="destructive" size="sm" onClick={() => handleDeleteConfig(c.id)}>Remover</Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Card className="border-primary/20 shadow-purple">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Facebook className="h-5 w-5 text-primary" />
-              <CardTitle>Facebook Pixel</CardTitle>
+              <CardTitle>Integração do Facebook</CardTitle>
             </div>
-            <CardDescription>
-              Configure o ID do Pixel e o Token da API para rastrear eventos e enviar via Conversions API.
-            </CardDescription>
+            <CardDescription>Fluxo simplificado em três etapas</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="fb_pixel_id">ID Pixel</Label>
-              <Input id="fb_pixel_id" placeholder="ex: 165121022896834653" value={fbPixelId} onChange={(e) => setFbPixelIdInput(e.target.value)} className="border-primary/20" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fb_token">Token Pixel API</Label>
-              <Input id="fb_token" type="password" placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} className="border-primary/20" />
-            </div>
-            <Button onClick={handleSaveFacebook} className="w-full bg-gradient-hero hover:opacity-90 shadow-purple">
-              {fbStatus === "idle" && "Instalar"}
-              {fbStatus === "connected" && "Conectado"}
-              {fbStatus === "connected_pixel_only" && "Conectado (Pixel)"}
-              {fbStatus === "failed" && "Tentar novamente"}
-            </Button>
-            {fbStatus === "connected" && (
-              <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
-                <p className="text-sm text-success">✓ Pixel conectado</p>
-              </div>
-            )}
-            {fbStatus === "failed" && (
-              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive">Falha ao enviar evento de teste. Verifique o Token e ID.</p>
-              </div>
-            )}
-            {fbStatus === "connected_pixel_only" && (
-              <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                <p className="text-sm text-warning">Pixel ativo. Conversions API indisponível no deploy atual.</p>
-              </div>
-            )}
-            <div className="pt-2 border-t border-primary/20">
-              <h3 className="font-medium mb-2">Relatórios de Integração</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3 border rounded">
-                  <div className="text-muted-foreground">Eventos enviados</div>
-                  <div className="font-semibold">{fbSummary.success}</div>
+          <CardContent>
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <div className="text-sm font-medium">1. Seleção do produto</div>
+                <div className="space-y-2">
+                  {products.map((p) => (
+                    <button key={p.id} className={`w-full text-left p-3 border rounded ${selectedProductId === p.id ? "bg-muted border-primary" : "bg-background"}`} onClick={() => setSelectedProductId(p.id)}>
+                      <div className="truncate">{p.name}</div>
+                    </button>
+                  ))}
+                  {products.length === 0 && <div className="text-sm text-muted-foreground">Nenhum produto</div>}
                 </div>
-                <div className="p-3 border rounded">
-                  <div className="text-muted-foreground">Eventos com falha</div>
-                  <div className="font-semibold">{fbSummary.failed}</div>
-                </div>
+                <div className={`text-xs ${selectedProductId ? 'text-success' : 'text-muted-foreground'}`}>{selectedProductId ? "Produto selecionado" : "Selecione um produto"}</div>
               </div>
-              <div className="mt-3">
-                <h4 className="text-sm font-semibold">Taxa de conversão por campanha</h4>
-                <div className="space-y-2 mt-2">
-                  {Object.keys(campaigns).length === 0 && <p className="text-sm text-muted-foreground">Sem dados</p>}
-                  {Object.entries(campaigns).map(([camp, stats]) => {
-                    const rate = stats.sent > 0 ? Math.round((stats.purchases / stats.sent) * 100) : 0;
-                    return (
-                      <div key={camp} className="flex items-center justify-between p-2 border rounded">
-                        <div className="text-sm">{camp}</div>
-                        <div className="text-sm">{rate}%</div>
-                      </div>
-                    );
-                  })}
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="fb_pixel_id">2. Pixel ID</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>Encontre o Pixel ID no Events Manager do Facebook</TooltipContent>
+                  </Tooltip>
                 </div>
+                <Input id="fb_pixel_id" placeholder="ex: 165121022896834653" value={fbPixelId} onChange={(e) => setFbPixelIdInput(e.target.value)} />
+                <div className={`text-xs ${/^[0-9]{8,20}$/.test(fbPixelId) ? 'text-success' : 'text-destructive'}`}>{/^[0-9]{8,20}$/.test(fbPixelId) ? "ID válido" : "ID inválido"}</div>
               </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="fb_token">3. Token API de Conversão</Label>
+                </div>
+                <div className="flex gap-2">
+                  <Input id="fb_token" type={showToken ? "text" : "password"} placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} />
+                  <Button type="button" variant="outline" onClick={() => setShowToken((v) => !v)}>{showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                </div>
+                <div className={`text-xs ${(fbToken && fbToken !== '••••••••••••••••' && fbToken.length >= 20) ? 'text-success' : 'text-destructive'}`}>{(fbToken && fbToken !== '••••••••••••••••' && fbToken.length >= 20) ? "Token válido" : "Token inválido"}</div>
+              </div>
+
+              <Button onClick={handleSaveIntegration} disabled={loading} className="w-full">Salvar e ativar integração</Button>
             </div>
           </CardContent>
         </Card>
@@ -289,57 +150,3 @@ const Integration = () => {
 };
 
 export default Integration;
-  const loadData = async (userId: string) => {
-    const { data: prods } = await supabase.from("products").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-    setProducts(prods || []);
-    const { data: cfgs } = await supabase.from("fb_configs").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-    setConfigs(cfgs || []);
-    const { data: links } = await supabase.from("fb_product_configs").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-    setAssocs(links || []);
-  };
-
-  const handleCreateConfig = async () => {
-    if (!fbPixelId || !/^[0-9]{8,20}$/.test(fbPixelId)) { toast.error("ID do Pixel inválido"); return; }
-    if (fbToken && fbToken !== "••••••••••••••••" && fbToken.length < 20) { toast.error("Token API inválido"); return; }
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast.error("Você precisa estar logado"); navigate("/auth"); return; }
-      const name = `Pixel ${fbPixelId}`;
-      const packed = fbToken !== "••••••••••••••••" ? await packApiToken(fbToken) : (await packApiToken(await getFbApiToken() || ""));
-      if (!packed) { toast.error("Forneça o token"); return; }
-      const { error } = await supabase.from("fb_configs").insert({ user_id: session.user.id, name, pixel_id: fbPixelId, token_enc: packed, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-      if (error) throw error;
-      await loadData(session.user.id);
-      await setFbPixelId(fbPixelId);
-      if (fbToken !== "••••••••••••••••") await setFbApiToken(fbToken);
-      setFbTokenInput("••••••••••••••••");
-      toast.success("Pixel/Token cadastrado");
-    } catch (e) { const msg = e instanceof Error ? e.message : "Erro ao salvar"; toast.error(msg); } finally { setLoading(false); }
-  };
-
-  const handleDeleteConfig = async (id: string) => {
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast.error("Você precisa estar logado"); navigate("/auth"); return; }
-      const { error } = await supabase.from("fb_configs").delete().eq("id", id).eq("user_id", session.user.id);
-      if (error) throw error;
-      await loadData(session.user.id);
-      toast.success("Configuração removida");
-    } catch (e) { const msg = e instanceof Error ? e.message : "Erro ao remover"; toast.error(msg); } finally { setLoading(false); }
-  };
-
-  const handleAssociate = async () => {
-    if (!selectedProductId || !selectedConfigId) { toast.error("Selecione produto e configuração"); return; }
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast.error("Você precisa estar logado"); navigate("/auth"); return; }
-      await supabase.from("fb_product_configs").update({ is_active: false, updated_at: new Date().toISOString() }).eq("user_id", session.user.id).eq("product_id", selectedProductId).eq("campaign_name", campaignName || null).eq("is_active", true);
-      const { error } = await supabase.from("fb_product_configs").insert({ user_id: session.user.id, product_id: selectedProductId, fb_config_id: selectedConfigId, campaign_name: campaignName || null, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-      if (error) throw error;
-      await loadData(session.user.id);
-      toast.success("Associação criada");
-    } catch (e) { const msg = e instanceof Error ? e.message : "Erro ao associar"; toast.error(msg); } finally { setLoading(false); }
-  };
