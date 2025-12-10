@@ -178,7 +178,10 @@ const Settings = () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pixel_id: pid, token, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
           });
-          if (!resp.ok) setFbStatus("connected_pixel_only");
+          if (!resp.ok) {
+            if (resp.status === 404 || resp.status === 503) setFbStatus("connected_pixel_only");
+            else setFbStatus("failed");
+          }
         } catch {
           setFbStatus("connected_pixel_only");
         }
