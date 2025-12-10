@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { trackPixelEvent, sendConversionsAPI, getCampaignFromUrl } from "@/utils/fb";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -54,9 +55,17 @@ const Auth = () => {
         if (error) throw error;
         if (data.session) {
           toast.success("Cadastro concluído! Entrando...");
+          const campaign = getCampaignFromUrl(window.location.href);
+          const ev = { name: "Lead" as const, time: Date.now(), sourceUrl: window.location.href, customData: { method: "signup", campaign } };
+          trackPixelEvent(ev);
+          await sendConversionsAPI(ev);
           navigate("/dashboard");
         } else {
           toast.info("Verifique seu e-mail para confirmar o cadastro. Após confirmar, você será direcionado ao dashboard.");
+          const campaign = getCampaignFromUrl(window.location.href);
+          const ev = { name: "Lead" as const, time: Date.now(), sourceUrl: window.location.href, customData: { method: "signup", campaign } };
+          trackPixelEvent(ev);
+          await sendConversionsAPI(ev);
           try {
             const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
             if (!loginErr) navigate("/dashboard");

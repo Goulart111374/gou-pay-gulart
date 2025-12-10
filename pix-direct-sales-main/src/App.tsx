@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Suspense, lazy, Component, ReactNode } from "react";
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
@@ -38,6 +38,18 @@ const Terms = lazy(() => import("./pages/Terms"));
 
 const queryClient = new QueryClient();
 
+import { initPixel, trackPixelEvent, flushQueue } from "@/utils/fb";
+
+const RouteEvents = () => {
+  const location = useLocation();
+  useEffect(() => {
+    initPixel();
+    trackPixelEvent({ name: "PageView", time: Date.now(), sourceUrl: window.location.href });
+    flushQueue();
+  }, [location.pathname, location.search]);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -62,6 +74,7 @@ const App = () => (
             <Route path="/pay/:productId" element={<PaymentPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <RouteEvents />
         </Suspense>
         </ErrorBoundary>
       </BrowserRouter>

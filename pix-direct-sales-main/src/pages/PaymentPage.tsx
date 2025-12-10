@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { QrCode, Copy, Check, CheckCircle, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
+import { trackPixelEvent, sendConversionsAPI, getCampaignFromUrl } from "@/utils/fb";
 
 interface Product {
   id: string;
@@ -36,6 +37,7 @@ const PaymentPage = () => {
   const [sellerBlocked, setSellerBlocked] = useState<boolean>(false);
   const [paymentStartedAt, setPaymentStartedAt] = useState<number | null>(null);
   const [remainingMs, setRemainingMs] = useState<number>(0);
+  const [purchaseTracked, setPurchaseTracked] = useState<boolean>(false);
 
   useEffect(() => {
     loadProduct();
@@ -52,6 +54,12 @@ const PaymentPage = () => {
 
       if (error) throw error;
       setProduct(data);
+      try {
+        const campaign = getCampaignFromUrl(window.location.href);
+        const ev = { name: "ViewContent" as const, time: Date.now(), sourceUrl: window.location.href, customData: { product_id: data.id, price: data.price, campaign } };
+        trackPixelEvent(ev);
+        await sendConversionsAPI(ev);
+      } catch { void 0; }
     } catch (error) {
       toast.error("Produto não encontrado");
     } finally {
@@ -102,6 +110,12 @@ const PaymentPage = () => {
       setPaymentStartedAt(Date.now());
       setRemainingMs(24 * 60 * 60 * 1000);
       toast.success("Pagamento gerado! Escaneie o QR Code ou copie o código PIX");
+      try {
+        const campaign = getCampaignFromUrl(window.location.href);
+        const ev = { name: "AddToCart" as const, time: Date.now(), sourceUrl: window.location.href, customData: { product_id: product!.id, price: product!.price, email: buyerEmail, name: buyerName, campaign } };
+        trackPixelEvent(ev);
+        await sendConversionsAPI(ev);
+      } catch { void 0; }
     } catch (e) {
       const message = e instanceof Error ? e.message : "Erro ao gerar pagamento";
       toast.error(message);
@@ -129,6 +143,15 @@ const PaymentPage = () => {
           if (data.status === "approved") {
             toast.success("Compra aprovada!");
             clearInterval(interval);
+            if (!purchaseTracked && product) {
+              try {
+                const campaign = getCampaignFromUrl(window.location.href);
+                const ev = { name: "Purchase" as const, time: Date.now(), sourceUrl: window.location.href, value: product.price, currency: "BRL", customData: { product_id: product.id, payment_id: paymentId, campaign } };
+                trackPixelEvent(ev);
+                await sendConversionsAPI(ev);
+                setPurchaseTracked(true);
+              } catch { void 0; }
+            }
           }
         }
       } catch { void 0; }
