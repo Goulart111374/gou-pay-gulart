@@ -110,7 +110,12 @@ export async function sendConversionsAPI(ev: FbEvent) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pixel_id: pid, token, event: ev }),
     });
-    if (!resp.ok) throw new Error('Falha ao enviar para API');
+    if (!resp.ok) {
+      const text = await resp.text();
+      let details: any = undefined; try { details = JSON.parse(text); } catch {}
+      const message = typeof details?.error === 'string' ? details.error : 'Falha ao enviar para API';
+      throw new Error(message + (details?.details ? ' — ' + JSON.stringify(details.details) : ''));
+    }
     logEvent({ ...ev, status: 'success', via: 'capi' });
   } catch (e) {
     enqueueEvent(ev);
@@ -140,7 +145,12 @@ export async function flushQueue() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pixel_id: pid, token, event: ev }),
       });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      if (!resp.ok) {
+        const text = await resp.text();
+        let details: any = undefined; try { details = JSON.parse(text); } catch {}
+        const message = typeof details?.error === 'string' ? details.error : ('HTTP ' + resp.status);
+        throw new Error(message + (details?.details ? ' — ' + JSON.stringify(details.details) : ''));
+      }
       logEvent({ ...ev, status: 'success', via: 'capi-retry' });
     } catch (e) {
       next.push(ev);

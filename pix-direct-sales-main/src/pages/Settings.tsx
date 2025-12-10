@@ -22,6 +22,7 @@ const Settings = () => {
   const [fbLog, setFbLog] = useState<FbLogEntry[]>([]);
   const [fbSummary, setFbSummary] = useState<{ success: number; failed: number }>({ success: 0, failed: 0 });
   const [campaigns, setCampaigns] = useState<Record<string, { sent: number; purchases: number }>>({});
+  const [fbTestCode, setFbTestCode] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -176,11 +177,16 @@ const Settings = () => {
           const resp = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pixel_id: pid, token, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
+            body: JSON.stringify({ pixel_id: pid, token, test_event_code: fbTestCode || undefined, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
           });
           if (!resp.ok) {
+            let msg = "";
+            try { const j = await resp.json(); msg = j?.error || ""; } catch {}
             if (resp.status === 404 || resp.status === 503) setFbStatus("connected_pixel_only");
-            else setFbStatus("failed");
+            else {
+              setFbStatus("failed");
+              if (msg) toast.error(String(msg));
+            }
           }
         } catch {
           setFbStatus("connected_pixel_only");
@@ -310,10 +316,14 @@ const Settings = () => {
               <Label htmlFor="fb_pixel_id">ID Pixel</Label>
               <Input id="fb_pixel_id" placeholder="ex: 165121022896834653" value={fbPixelId} onChange={(e) => setFbPixelIdInput(e.target.value)} className="border-primary/20" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="fb_token">Token Pixel API</Label>
-              <Input id="fb_token" type="password" placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} className="border-primary/20" />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="fb_token">Token Pixel API</Label>
+            <Input id="fb_token" type="password" placeholder="EA..." value={fbToken} onChange={(e) => setFbTokenInput(e.target.value)} className="border-primary/20" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="fb_test">Código de Evento de Teste (opcional)</Label>
+            <Input id="fb_test" placeholder="TEST123..." value={fbTestCode} onChange={(e) => setFbTestCode(e.target.value)} className="border-primary/20" />
+          </div>
             <Button onClick={handleSaveFacebook} className="w-full bg-gradient-hero hover:opacity-90 shadow-purple">
               {fbStatus === "idle" && "Instalar"}
               {fbStatus === "connected" && "Conectado"}
