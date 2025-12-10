@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Key, Facebook } from "lucide-react";
-import { setApiToken as setFbApiToken, setPixelId as setFbPixelId, getApiToken as getFbApiToken, getPixelId as getFbPixelId, getLog } from "@/utils/fb";
+import { setApiToken as setFbApiToken, setPixelId as setFbPixelId, getApiToken as getFbApiToken, getPixelId as getFbPixelId, getLog, initPixel, trackPixelEvent } from "@/utils/fb";
 type FbLogEntry = { name?: string; status?: "success" | "failed"; via?: string; time?: number; sourceUrl?: string; customData?: Record<string, unknown>; value?: number; currency?: string };
 
 const Settings = () => {
@@ -18,7 +18,7 @@ const Settings = () => {
   const [hasConfig, setHasConfig] = useState(false);
   const [fbPixelId, setFbPixelIdInput] = useState("");
   const [fbToken, setFbTokenInput] = useState("");
-  const [fbStatus, setFbStatus] = useState<"idle" | "connected" | "failed">("idle");
+  const [fbStatus, setFbStatus] = useState<"idle" | "connected" | "connected_pixel_only" | "failed">("idle");
   const [fbLog, setFbLog] = useState<FbLogEntry[]>([]);
   const [fbSummary, setFbSummary] = useState<{ success: number; failed: number }>({ success: 0, failed: 0 });
   const [campaigns, setCampaigns] = useState<Record<string, { sent: number; purchases: number }>>({});
@@ -164,13 +164,22 @@ const Settings = () => {
       setFbStatus("idle");
       const token = await getFbApiToken();
       const pid = getFbPixelId();
+      try {
+        initPixel();
+        trackPixelEvent({ name: "PageView", time: Date.now(), sourceUrl: window.location.href });
+        setFbStatus("connected");
+      } catch { /* noop */ }
       if (token && pid) {
-        const resp = await fetch("/api/fb-events", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pixel_id: pid, token, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
-        });
-        setFbStatus(resp.ok ? "connected" : "failed");
+        try {
+          const resp = await fetch("/api/fb-events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pixel_id: pid, token, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
+          });
+          if (!resp.ok) setFbStatus("connected_pixel_only");
+        } catch {
+          setFbStatus("connected_pixel_only");
+        }
       }
     } catch (e) {
       setFbStatus("failed");
@@ -303,6 +312,7 @@ const Settings = () => {
             <Button onClick={handleSaveFacebook} className="w-full bg-gradient-hero hover:opacity-90 shadow-purple">
               {fbStatus === "idle" && "Instalar"}
               {fbStatus === "connected" && "Conectado"}
+              {fbStatus === "connected_pixel_only" && "Conectado (Pixel)"}
               {fbStatus === "failed" && "Tentar novamente"}
             </Button>
             {fbStatus === "connected" && (
@@ -313,6 +323,11 @@ const Settings = () => {
             {fbStatus === "failed" && (
               <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <p className="text-sm text-destructive">Falha ao enviar evento de teste. Verifique o Token e ID.</p>
+              </div>
+            )}
+            {fbStatus === "connected_pixel_only" && (
+              <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                <p className="text-sm text-warning">Pixel ativo. Conversions API indisponível no deploy atual.</p>
               </div>
             )}
             <div className="pt-2 border-t border-primary/20">
