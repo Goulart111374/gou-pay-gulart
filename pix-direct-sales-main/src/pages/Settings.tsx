@@ -171,7 +171,9 @@ const Settings = () => {
       } catch { /* noop */ }
       if (token && pid) {
         try {
-          const resp = await fetch("/api/fb-events", {
+          const base = (import.meta as any).env?.VITE_PUBLIC_API_BASE || "";
+          const url = base ? `${base}/api/fb-events` : "/api/fb-events";
+          const resp = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pixel_id: pid, token, event: { name: "PageView", time: Date.now(), sourceUrl: window.location.href } }),
