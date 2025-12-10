@@ -43,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const cd = ev.customData || {};
     const ud = ev.userData || {};
 
-    const mappedUserData: Record<string, string> = {};
+    const mappedUserData: Record<string, string> = {} as any;
     const em = normalizeEmail(ud.em ?? cd.email);
     const ph = normalizePhone(ud.ph ?? cd.phone);
     const fn = normalizeName(ud.fn ?? cd.first_name ?? cd.name);
@@ -53,12 +53,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (fn) mappedUserData.fn = fn;
     if (ln) mappedUserData.ln = ln;
 
+    const ipHeader = (req.headers["x-forwarded-for"] as string | undefined) || (req.headers["X-Forwarded-For"] as string | undefined) || "";
+    const ip = ipHeader.split(",").map((s) => s.trim()).filter(Boolean)[0] || "";
+    const ua = (req.headers["user-agent"] as string | undefined) || (req.headers["User-Agent"] as string | undefined) || "";
+    if (ip) (mappedUserData as any).client_ip_address = ip;
+    if (ua) (mappedUserData as any).client_user_agent = ua;
+
+    const origin = (req.headers["origin"] as string | undefined) || (req.headers["Origin"] as string | undefined) || "";
+    const host = (req.headers["host"] as string | undefined) || (req.headers["Host"] as string | undefined) || "";
+    const fallbackUrl = origin || (host ? `https://${host}` : "");
+
     const payload = {
       data: [
         {
           event_name: ev.name,
           event_time: Math.floor((ev.time || Date.now()) / 1000),
-          event_source_url: ev.sourceUrl || (req.headers["referer"] as string) || "",
+          event_source_url: ev.sourceUrl || (req.headers["referer"] as string) || fallbackUrl,
           action_source: "website",
           user_data: mappedUserData,
           custom_data: cd,
