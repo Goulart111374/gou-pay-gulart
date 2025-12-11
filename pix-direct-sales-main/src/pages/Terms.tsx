@@ -21,7 +21,6 @@ const Terms = () => {
               <p><strong>Última atualização:</strong> 06/12/2025</p>
               <p><strong>Razão Social:</strong> Ademir Goulart</p>
               <p><strong>CNPJ:</strong> 58.704.951/0001-21</p>
-              <p><strong>Endereço:</strong> Avenida Goias 301</p>
               <p><strong>E-mail de contato:</strong> <a href="mailto:authgou@gmail.com" className="text-primary underline">authgou@gmail.com</a></p>
             </div>
 
