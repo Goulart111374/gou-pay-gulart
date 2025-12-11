@@ -299,49 +299,52 @@ const Index = () => {
 
               <Card className="border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
                 <CardHeader>
-                  <div className="flex items-center gap-2 text-[#CFCFCF]"><TrendingUp className="h-5 w-5 text-[#8A2BE2]" /> Compare e economize</div>
+                  <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-[#D34FE2]" /><span className="text-white">Compare e economize</span></div>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-[#AFAFAF]">
-                          <th className="text-left py-2 font-medium">Item</th>
-                          <th className="text-left py-2 font-medium">GouPay</th>
-                          <th className="text-left py-2 font-medium">Outros</th>
+                        <tr>
+                          <th className="text-left py-2 font-medium text-[#AFAFAF]">&nbsp;</th>
+                          <th className="text-left py-2 font-semibold text-[#D34FE2]">GouPay</th>
+                          <th className="text-left py-2 font-semibold text-[#CFCFCF]">Outros</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr className="border-t border-white/10">
-                          <td className="py-3">Taxa por venda</td>
-                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> 0%</td>
-                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> 4% a 12%</td>
+                          <td className="py-4 text-[#CFCFCF]">Taxa por venda</td>
+                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> 0%</td>
+                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> 4% a 12%</td>
                         </tr>
                         <tr className="border-t border-white/10">
-                          <td className="py-3">Recebimento</td>
-                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Instantâneo</td>
-                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> D+14 ou D+30</td>
+                          <td className="py-4 text-[#CFCFCF]">Recebimento</td>
+                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Instantâneo</td>
+                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> D+14 ou D+30</td>
                         </tr>
                         <tr className="border-t border-white/10">
-                          <td className="py-3">Dinheiro vai para</td>
-                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Seu banco direto</td>
-                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> Wallet da plataforma</td>
+                          <td className="py-4 text-[#CFCFCF]">Dinheiro vai para</td>
+                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Seu banco direto</td>
+                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> Wallet da plataforma</td>
                         </tr>
                         <tr className="border-t border-white/10">
-                          <td className="py-3">Dependência da plataforma</td>
-                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Nenhuma</td>
-                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> Total</td>
+                          <td className="py-4 text-[#CFCFCF]">Dependência da plataforma</td>
+                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Nenhuma</td>
+                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> Total</td>
                         </tr>
                         <tr className="border-t border-white/10">
-                          <td className="py-3">Bloqueio de saldo</td>
-                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Nunca</td>
-                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> Comum</td>
+                          <td className="py-4 text-[#CFCFCF]">Bloqueio de saldo</td>
+                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Nunca</td>
+                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> Comum</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  <div className="mt-6 bg-emerald-900/25 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-lg text-sm">
-                    Economia média: vendendo R$ 5.000/mês você economiza até R$ 562 em taxas
+                  <div className="mt-6 rounded-lg px-4 py-3 text-sm bg-emerald-900/25 border border-emerald-500/30">
+                    <span className="font-medium text-emerald-300">Economia média:</span>
+                    <span className="text-[#CFCFCF]"> vendendo R$ 5.000/mês você economiza até </span>
+                    <span className="font-semibold text-emerald-300">R$ 562</span>
+                    <span className="text-[#CFCFCF]"> em taxas</span>
                   </div>
                 </CardContent>
               </Card>
