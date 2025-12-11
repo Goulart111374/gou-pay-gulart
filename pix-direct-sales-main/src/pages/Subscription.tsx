@@ -155,12 +155,11 @@ const Subscription = () => {
               <div className="text-5xl font-extrabold bg-gradient-hero bg-clip-text text-transparent">R$ 37,90 <span className="text-base align-top text-foreground">/ mês</span></div>
               <div className="text-sm text-muted-foreground">Sua assinatura está ativa.</div>
               <div className="text-sm">Expira em: {expiresAt ? new Date(expiresAt).toLocaleString() : "-"}</div>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-                <Button className="bg-primary" onClick={() => { setSelectedPlan("monthly"); handleCreate(); }}>Renovar Assinatura</Button>
-                {enableTrial && (
+              {enableTrial && (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
                   <Button variant="outline" onClick={() => { setSelectedPlan("trial"); handleCreate(); }}>Ativar Plano de Teste (R$ 2,00 / 5 min)</Button>
-                )}
-              </div>
+                </div>
+              )}
               {enableTrial && (
                 <div className="mt-2 text-xs text-muted-foreground">
                   <p>O plano de teste concede acesso por 5 minutos para avaliação.</p>
@@ -193,7 +192,7 @@ const Subscription = () => {
                     <li className="flex items-center gap-2"><Check className="h-4 w-4 text-success" /> Integração Mercado Pago para vendas de produtos.</li>
                   </ul>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <Button variant="outline" className="w-full" onClick={() => { setSelectedPlan("monthly"); handleCreate(); }}>Escolher Plano Mensal</Button>
+                    <Button variant="outline" className="w-full" onClick={() => { setSelectedPlan("monthly"); handleCreate(); }}>{expired ? "Renovar Assinatura" : "Escolher Plano Mensal"}</Button>
                     {enableTrial && (
                       <Button className="w-full bg-gradient-hero hover:opacity-90" onClick={() => { setSelectedPlan("trial"); handleCreate(); }}>Plano de Teste (R$ 2,00 / 5 min)</Button>
                     )}

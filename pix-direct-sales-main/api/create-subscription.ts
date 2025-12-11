@@ -87,11 +87,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const qrCode = mpData?.point_of_interaction?.transaction_data?.qr_code ?? null;
     const qrCodeBase64 = mpData?.point_of_interaction?.transaction_data?.qr_code_base64 ?? null;
 
+    const { data: current } = await supabase
+      .from("subscriptions")
+      .select("status,expires_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const keepActive = current && current.status === "active";
+
     await supabase
       .from("subscriptions")
       .upsert({
         user_id: userId,
-        status: status === "approved" ? "active" : "pending",
+        status: status === "approved" ? "active" : (keepActive ? "active" : "pending"),
         last_payment_id: paymentId,
       }, { onConflict: "user_id" });
 
