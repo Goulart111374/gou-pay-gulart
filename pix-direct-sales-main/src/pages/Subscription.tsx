@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Rocket, Check, QrCode, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { getReminderSchedule, shouldSchedule, markScheduled } from "@/utils/subscription";
+ 
 
 const Subscription = () => {
   const navigate = useNavigate();
@@ -120,15 +120,7 @@ const Subscription = () => {
     const expired = new Date(expiresAt) <= new Date();
     const isActive = status === "active" && !expired;
     if (!isActive) return;
-    if (!shouldSchedule(expiresAt)) return;
-    const schedule = getReminderSchedule(expiresAt);
-    const timers = schedule.map((i) => {
-      const ms = i.at - Date.now();
-      if (ms <= 0) return -1 as number;
-      return window.setTimeout(() => toast.info(i.label), ms);
-    }).filter((id) => id !== -1);
-    markScheduled(expiresAt);
-    return () => { for (const id of timers) clearTimeout(id); };
+    return;
   }, [expiresAt, status]);
 
   if (loading) {
