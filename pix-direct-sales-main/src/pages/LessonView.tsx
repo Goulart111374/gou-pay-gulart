@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { trackPixelEvent, sendConversionsAPI, getCampaignFromUrl } from "@/utils/fb";
+import { trackPixelEvent, sendConversionsAPI, getCampaignFromUrl, ensureProductFbConfig } from "@/utils/fb";
 
 type Product = { id: string; user_id?: string; name: string; description: string | null };
 type Module = { id: string; product_id: string; title: string };
@@ -85,10 +85,13 @@ const LessonView = () => {
     if (!hasAccess || !lesson || !product) return;
     const run = async () => {
       try {
-        const campaign = getCampaignFromUrl(window.location.href);
-        const ev = { name: "ViewContent" as const, time: Date.now(), sourceUrl: window.location.href, customData: { product_id: product.id, lesson_id: lesson.id, campaign } };
-        trackPixelEvent(ev);
-        await sendConversionsAPI(ev);
+        const ok = await ensureProductFbConfig(product.id);
+        if (ok) {
+          const campaign = getCampaignFromUrl(window.location.href);
+          const ev = { name: "ViewContent" as const, time: Date.now(), sourceUrl: window.location.href, customData: { product_id: product.id, lesson_id: lesson.id, campaign } };
+          trackPixelEvent(ev);
+          await sendConversionsAPI(ev);
+        }
       } catch { void 0; }
     };
     run();

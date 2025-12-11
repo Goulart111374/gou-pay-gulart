@@ -45,7 +45,6 @@ const RouteEvents = () => {
   const location = useLocation();
   useEffect(() => {
     initPixel();
-    trackPixelEvent({ name: "PageView", time: Date.now(), sourceUrl: window.location.href });
     flushQueue();
   }, [location.pathname, location.search]);
   return null;

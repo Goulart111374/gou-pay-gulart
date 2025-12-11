@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { QrCode, Copy, Check, CheckCircle, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { trackPixelEvent, sendConversionsAPI, getCampaignFromUrl } from "@/utils/fb";
+import { trackPixelEvent, sendConversionsAPI, getCampaignFromUrl, ensureProductFbConfig } from "@/utils/fb";
 
 interface Product {
   id: string;
@@ -55,10 +55,13 @@ const PaymentPage = () => {
       if (error) throw error;
       setProduct(data);
       try {
-        const campaign = getCampaignFromUrl(window.location.href);
-        const ev = { name: "ViewContent" as const, time: Date.now(), sourceUrl: window.location.href, customData: { product_id: data.id, price: data.price, campaign } };
-        trackPixelEvent(ev);
-        await sendConversionsAPI(ev);
+        const ok = await ensureProductFbConfig(data.id);
+        if (ok) {
+          const campaign = getCampaignFromUrl(window.location.href);
+          const ev = { name: "ViewContent" as const, time: Date.now(), sourceUrl: window.location.href, customData: { product_id: data.id, price: data.price, campaign } };
+          trackPixelEvent(ev);
+          await sendConversionsAPI(ev);
+        }
       } catch { void 0; }
     } catch (error) {
       toast.error("Produto não encontrado");

@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { supabase } from "@/integrations/supabase/client";
 const LS_KEYS = {
   pixelId: "fb_pixel_id",
   tokenEnc: "fb_api_token_enc",
@@ -190,4 +191,31 @@ export function getLog(): LogEntry[] { return readLog(); }
 
 export function getCampaignFromUrl(u: string): string | undefined {
   try { const url = new URL(u); return url.searchParams.get('utm_campaign') || undefined; } catch { return undefined; }
+}
+
+export async function ensureProductFbConfig(productId: string): Promise<boolean> {
+  try {
+    const { data: link } = await supabase
+      .from("fb_product_configs")
+      .select("fb_config_id,is_active")
+      .eq("product_id", productId)
+      .eq("is_active", true)
+      .limit(1)
+      .single();
+    if (!link || !link.is_active) return false;
+    const { data: cfg } = await supabase
+      .from("fb_configs")
+      .select("pixel_id,token_enc")
+      .eq("id", (link as any).fb_config_id)
+      .limit(1)
+      .single();
+    if (!cfg) return false;
+    await setPixelId((cfg as any).pixel_id);
+    const tok = await unpackApiToken((cfg as any).token_enc);
+    if (!tok) return false;
+    await setApiToken(tok);
+    return true;
+  } catch {
+    return false;
+  }
 }
