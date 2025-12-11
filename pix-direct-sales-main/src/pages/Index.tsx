@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Banknote, ArrowRightLeft, Library, Download, QrCode, Shield, User, Palette, CheckCircle, PlayCircle, Users, Ban, RefreshCcw, Lock } from "lucide-react";
+import { Upload, Banknote, ArrowRightLeft, Library, Download, QrCode, Shield, User, Palette, CheckCircle, PlayCircle, Users, Ban, RefreshCcw, Lock, Check, X, TrendingUp } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -260,7 +260,94 @@ const Index = () => {
           </div>
         </section>
 
-        
+        <section className="py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
+                <span className="text-white">Por que pagar </span>
+                <span className="bg-gradient-to-r from-[#8A2BE2] to-[#D34FE2] bg-clip-text text-transparent">taxa em cada venda</span>
+                <span className="text-white"> se você pode pagar </span>
+                <span className="bg-gradient-to-r from-[#8A2BE2] to-[#D34FE2] bg-clip-text text-transparent">só uma mensalidade?</span>
+              </h2>
+              <p className="mt-4 text-[#CFCFCF] text-lg max-w-3xl mx-auto">
+                Aqui na GouPay você vende e o dinheiro vai direto para seu banco. Você não depende da plataforma para nada. Não paga taxa nas suas vendas porque a grana vai direto para seu banco.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Card className="border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
+                <CardHeader>
+                  <div className="flex items-center gap-2 text-[#CFCFCF]"><Palette className="h-5 w-5 text-[#8A2BE2]" /> Plano Único</div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-6xl md:text-7xl font-extrabold mb-2">R$ 37<span className="text-4xl align-top">,90</span> <span className="text-2xl font-medium text-foreground">/ mês</span></div>
+                  <div className="text-sm text-[#AFAFAF] mb-6">Melhor pagar R$ 37,90/mês do que uma taxa em cima de todas as vendas</div>
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Zero taxa em todas as suas vendas</li>
+                    <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Dinheiro direto no seu banco</li>
+                    <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Recebimento instantâneo via PIX</li>
+                    <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Área de membros premium inclusa</li>
+                    <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Sem limites de vendas</li>
+                    <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Suporte prioritário</li>
+                  </ul>
+                  <div className="mt-8">
+                    <Button className="w-full bg-[#D34FE2] text-black font-semibold hover:opacity-90 h-12 rounded-xl" onClick={() => navigate("/auth?signup=1")}>Começar agora</Button>
+                    <div className="mt-2 text-center text-xs text-[#9A9A9A]">Cancele quando quiser • Sem fidelidade</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
+                <CardHeader>
+                  <div className="flex items-center gap-2 text-[#CFCFCF]"><TrendingUp className="h-5 w-5 text-[#8A2BE2]" /> Compare e economize</div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-[#AFAFAF]">
+                          <th className="text-left py-2 font-medium">Item</th>
+                          <th className="text-left py-2 font-medium">GouPay</th>
+                          <th className="text-left py-2 font-medium">Outros</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-t border-white/10">
+                          <td className="py-3">Taxa por venda</td>
+                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> 0%</td>
+                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> 4% a 12%</td>
+                        </tr>
+                        <tr className="border-t border-white/10">
+                          <td className="py-3">Recebimento</td>
+                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Instantâneo</td>
+                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> D+14 ou D+30</td>
+                        </tr>
+                        <tr className="border-t border-white/10">
+                          <td className="py-3">Dinheiro vai para</td>
+                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Seu banco direto</td>
+                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> Wallet da plataforma</td>
+                        </tr>
+                        <tr className="border-t border-white/10">
+                          <td className="py-3">Dependência da plataforma</td>
+                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Nenhuma</td>
+                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> Total</td>
+                        </tr>
+                        <tr className="border-t border-white/10">
+                          <td className="py-3">Bloqueio de saldo</td>
+                          <td className="py-3 flex items-center gap-2 text-emerald-400"><Check className="h-4 w-4" /> Nunca</td>
+                          <td className="py-3 flex items-center gap-2 text-destructive"><X className="h-4 w-4" /> Comum</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-6 bg-emerald-900/25 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-lg text-sm">
+                    Economia média: vendendo R$ 5.000/mês você economiza até R$ 562 em taxas
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-[#8A2BE2]/30 py-8">
