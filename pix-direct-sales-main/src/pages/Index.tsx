@@ -314,28 +314,28 @@ const Index = () => {
                       <tbody>
                         <tr className="border-t border-white/10">
                           <td className="py-4 text-[#CFCFCF]">Taxa por venda</td>
-                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> 0%</td>
-                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> 4% a 12%</td>
+                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> 0%</div></td>
+                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> 4% a 12%</div></td>
                         </tr>
                         <tr className="border-t border-white/10">
                           <td className="py-4 text-[#CFCFCF]">Recebimento</td>
-                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Instantâneo</td>
-                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> D+14 ou D+30</td>
+                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Instantâneo</div></td>
+                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> D+14 ou D+30</div></td>
                         </tr>
                         <tr className="border-t border-white/10">
                           <td className="py-4 text-[#CFCFCF]">Dinheiro vai para</td>
-                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Seu banco direto</td>
-                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> Wallet da plataforma</td>
+                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Seu banco direto</div></td>
+                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Wallet da plataforma</div></td>
                         </tr>
                         <tr className="border-t border-white/10">
                           <td className="py-4 text-[#CFCFCF]">Dependência da plataforma</td>
-                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Nenhuma</td>
-                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> Total</td>
+                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nenhuma</div></td>
+                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Total</div></td>
                         </tr>
                         <tr className="border-t border-white/10">
                           <td className="py-4 text-[#CFCFCF]">Bloqueio de saldo</td>
-                          <td className="py-4 font-semibold text-emerald-400 flex items-center gap-2"><Check className="h-4 w-4" /> Nunca</td>
-                          <td className="py-4 text-destructive flex items-center gap-2"><X className="h-4 w-4" /> Comum</td>
+                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nunca</div></td>
+                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Comum</div></td>
                         </tr>
                       </tbody>
                     </table>
