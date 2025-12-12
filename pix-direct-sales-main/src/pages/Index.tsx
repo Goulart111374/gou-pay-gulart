@@ -10,7 +10,7 @@ const Index = () => {
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const items = Array.from(document.querySelectorAll<HTMLElement>('.fade-on-scroll'));
     items.forEach((el, i) => {
-      el.style.setProperty('--stagger', `${Math.min(i * 80, 400)}ms`);
+      el.style.setProperty('--stagger', `${Math.min(i * 45, 180)}ms`);
       if (reduce) el.classList.add('in-view');
     });
     if (reduce || !(window as any).IntersectionObserver) {
@@ -26,7 +26,7 @@ const Index = () => {
           el.classList.remove('in-view');
         }
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    }, { threshold: 0.05, rootMargin: '0px 0px 20% 0px' });
     items.forEach((el) => io.observe(el));
 
     // Lightweight parallax driven by requestAnimationFrame

@@ -93,8 +93,8 @@ All colors MUST be HSL.
 
 .fade-on-scroll {
   opacity: 0;
-  transform: translateY(14px) scale(0.98);
-  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1), filter 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(8px) scale(0.99);
+  transition: opacity 450ms cubic-bezier(0.22, 1, 0.36, 1), transform 450ms cubic-bezier(0.22, 1, 0.36, 1), filter 450ms cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--stagger, 0ms);
   will-change: opacity, transform;
 }
