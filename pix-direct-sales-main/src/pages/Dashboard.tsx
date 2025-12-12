@@ -259,12 +259,7 @@ const Dashboard = () => {
         </div>
       </div>
       <main className={`mx-auto max-w-6xl px-4 md:px-6 py-6 ${desktopSidebarCollapsed ? "md:pl-[80px]" : "md:pl-[250px]"} ${mobileSidebarExpanded ? "pl-[232px]" : "pl-[76px]"}`}>
-        <a
-          href="https://i.imgur.com/rR72NBL.jpeg"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full mb-5"
-        >
+        <div className="block w-full mb-5">
           <img
             src="https://i.imgur.com/rR72NBL.jpeg"
             alt="Banner promocional"
@@ -273,7 +268,7 @@ const Dashboard = () => {
             decoding="async"
             referrerPolicy="no-referrer"
           />
-        </a>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" data-dashboard="stats">
           <Card className="bg-card border rounded-xl">
             <CardHeader className="pb-2">
