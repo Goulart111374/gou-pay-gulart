@@ -92,7 +92,7 @@ const Index = () => {
               <div className="order-1 md:order-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#232323]/80 border border-[#8A2BE2]/30 text-[#CFCFCF] mb-6">
                   <div className="h-2 w-2 rounded-full bg-[#8A2BE2]"></div>
-                  <span>Plataforma em crescimento</span>
+                  <span>GouPay</span>
                 </div>
                 <h1 className="fade-on-scroll text-4xl md:text-6xl font-extrabold leading-tight">
                   <span className="block">Corte as taxas e receba direto no seu banco, sem depender da gente..</span>
