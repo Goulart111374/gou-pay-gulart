@@ -422,8 +422,8 @@ const Index = () => {
                   </table>
                   <div className="mt-6 rounded-lg px-4 py-3 text-sm bg-emerald-900/25 border border-emerald-500/30">
                     <span className="font-medium text-emerald-300">Economia média:</span>
-                    <span className="text-[#CFCFCF]"> vendendo R$ 5.000/mês você economiza até </span>
-                    <span className="font-semibold text-emerald-300">R$ 562</span>
+                    <span className="text-[#CFCFCF]"> vendendo R$ 100.000/mês você economiza até </span>
+                    <span className="font-semibold text-emerald-300">R$ 20.000</span>
                     <span className="text-[#CFCFCF]"> em taxas</span>
                   </div>
                 </CardContent>
