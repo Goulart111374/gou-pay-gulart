@@ -28,6 +28,35 @@ const Index = () => {
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
     items.forEach((el) => io.observe(el));
+
+    // Lightweight parallax driven by requestAnimationFrame
+    if (!reduce && typeof window.requestAnimationFrame === 'function') {
+      const parallaxes = Array.from(document.querySelectorAll<HTMLElement>('.parallax-el'));
+      let rafId: number | null = null;
+      let lastY = window.scrollY;
+      let lastX = 0;
+      const onMouseMove = (e: MouseEvent) => { lastX = (e.clientX / window.innerWidth - 0.5) * 8; };
+      const loop = () => {
+        const y = window.scrollY;
+        if (Math.abs(y - lastY) > 0.5 || Math.abs(lastX) > 0.1) {
+          parallaxes.forEach((el) => {
+            const speed = Number(el.dataset.parallaxSpeed || '0.06');
+            const ty = y * speed;
+            const tx = lastX * speed;
+            el.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+          });
+          lastY = y;
+        }
+        rafId = window.requestAnimationFrame(loop);
+      };
+      window.addEventListener('mousemove', onMouseMove, { passive: true });
+      rafId = window.requestAnimationFrame(loop);
+      return () => {
+        io.disconnect();
+        window.removeEventListener('mousemove', onMouseMove);
+        if (rafId) cancelAnimationFrame(rafId);
+      };
+    }
     return () => io.disconnect();
   }, []);
 
@@ -53,8 +82,8 @@ const Index = () => {
 
       <main>
         <section className="relative overflow-hidden pt-20 md:pt-24 pb-16 checkerboard-hero">
-          <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-[#8A2BE2]/25 blur-[110px] z-0"></div>
-          <div className="absolute -bottom-40 -right-40 w-[520px] h-[520px] rounded-full bg-[#5E2DBE]/25 blur-[110px] z-0"></div>
+          <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-[#8A2BE2]/25 blur-[110px] z-0 parallax-el hero-ambient" data-parallax-speed="0.06"></div>
+          <div className="absolute -bottom-40 -right-40 w-[520px] h-[520px] rounded-full bg-[#5E2DBE]/25 blur-[110px] z-0 parallax-el hero-ambient" data-parallax-speed="0.10"></div>
           <div className="absolute inset-0 glass-hero z-10"></div>
           <div className="absolute inset-0 checkerboard-hero-overlay z-15"></div>
 
@@ -260,7 +289,8 @@ const Index = () => {
           </div>
         </section>
 
-        <section className="py-20">
+        <section className="py-20 relative overflow-hidden">
+          <div className="absolute inset-0 section-ambient pointer-events-none parallax-el" data-parallax-speed="0.04"></div>
           <div className="mx-auto max-w-6xl px-4">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
@@ -275,7 +305,7 @@ const Index = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Card className="border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
+              <Card className="fade-on-scroll border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
                 <CardHeader>
                   <div className="flex items-center gap-2 text-[#CFCFCF]"><Palette className="h-5 w-5 text-[#8A2BE2]" /> Plano Único</div>
                 </CardHeader>
@@ -299,7 +329,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
+              <Card className="fade-on-scroll border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
                 <CardHeader>
                   <div className="flex items-center gap-2 text-[#CFCFCF]"><TrendingUp className="h-5 w-5 text-[#8A2BE2]" /> Compare e economize</div>
                 </CardHeader>
