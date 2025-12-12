@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Banknote, ArrowRightLeft, Library, Download, QrCode, Shield, User, Palette, CheckCircle, PlayCircle, Users, Ban, RefreshCcw, Lock, Check, X, TrendingUp } from "lucide-react";
+import { Upload, Banknote, ArrowRightLeft, Library, Download, QrCode, Shield, User, Palette, CheckCircle, PlayCircle, Users, Ban, RefreshCcw, Lock, Check, X, TrendingUp, ArrowRight } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -282,7 +282,7 @@ const Index = () => {
                 <CardContent>
                   <div className="text-6xl md:text-7xl font-extrabold mb-2">R$ 37<span className="text-4xl align-top">,90</span> <span className="text-2xl font-medium text-foreground">/ mês</span></div>
                   <div className="text-sm text-[#AFAFAF] mb-6">Melhor pagar R$ 37,90/mês do que uma taxa em cima de todas as vendas</div>
-                  <ul className="space-y-3 text-sm">
+                  <ul className="space-y-3 text-sm text-[#CFCFCF]">
                     <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Zero taxa em todas as suas vendas</li>
                     <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Dinheiro direto no seu banco</li>
                     <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Recebimento instantâneo via PIX</li>
@@ -291,55 +291,55 @@ const Index = () => {
                     <li className="flex items-center gap-3"><Check className="h-5 w-5 text-[#8A2BE2]" /> Suporte prioritário</li>
                   </ul>
                   <div className="mt-8">
-                    <Button className="w-full bg-[#D34FE2] text-black font-semibold hover:opacity-90 h-12 rounded-xl" onClick={() => navigate("/auth?signup=1")}>Começar agora</Button>
-                    <div className="mt-2 text-center text-xs text-[#9A9A9A]">Cancele quando quiser • Sem fidelidade</div>
+                    <Button className="w-full bg-gradient-to-r from-[#C635E8] to-[#8A2BE2] text-white font-semibold hover:opacity-90 px-6 py-6 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A2BE2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A1A] active:scale-[0.99] transition-transform duration-200 flex items-center justify-center gap-2 group" onClick={() => navigate("/auth?signup=1")}>
+                      Começar agora <ArrowRight className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
+                    </Button>
+                    <p className="text-center text-xs text-[#AFAFAF] mt-3">Cancele quando quiser - Sem fidelidade</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-[#8A2BE2]/20 shadow-purple bg-[#232323]">
                 <CardHeader>
-                  <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-[#D34FE2]" /><span className="text-white">Compare e economize</span></div>
+                  <div className="flex items-center gap-2 text-[#CFCFCF]"><TrendingUp className="h-5 w-5 text-[#8A2BE2]" /> Compare e economize</div>
                 </CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr>
-                          <th className="text-left py-2 font-medium text-[#AFAFAF]">&nbsp;</th>
-                          <th className="text-left py-2 font-semibold text-[#D34FE2]">GouPay</th>
-                          <th className="text-left py-2 font-semibold text-[#CFCFCF]">Outros</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="border-t border-white/10">
-                          <td className="py-4 text-[#CFCFCF]">Taxa por venda</td>
-                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> 0%</div></td>
-                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> 4% a 12%</div></td>
-                        </tr>
-                        <tr className="border-t border-white/10">
-                          <td className="py-4 text-[#CFCFCF]">Recebimento</td>
-                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Instantâneo</div></td>
-                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> D+14 ou D+30</div></td>
-                        </tr>
-                        <tr className="border-t border-white/10">
-                          <td className="py-4 text-[#CFCFCF]">Dinheiro vai para</td>
-                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Seu banco direto</div></td>
-                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Wallet da plataforma</div></td>
-                        </tr>
-                        <tr className="border-t border-white/10">
-                          <td className="py-4 text-[#CFCFCF]">Dependência da plataforma</td>
-                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nenhuma</div></td>
-                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Total</div></td>
-                        </tr>
-                        <tr className="border-t border-white/10">
-                          <td className="py-4 text-[#CFCFCF]">Bloqueio de saldo</td>
-                          <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nunca</div></td>
-                          <td className="py-4 text-destructive"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Comum</div></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left">
+                        <th className="py-2 font-normal text-[#AFAFAF]"></th>
+                        <th className="py-2 font-semibold text-[#D34FE2]">GouPay</th>
+                        <th className="py-2 font-semibold text-[#AFAFAF]">Outros</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
+                        <td className="py-4 text-[#CFCFCF] pl-2">Taxa por venda</td>
+                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> 0%</div></td>
+                        <td className="py-4 text-destructive pr-2"><div className="flex items-center gap-2"><X className="h-4 w-4" /> 4% a 12%</div></td>
+                      </tr>
+                      <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
+                        <td className="py-4 text-[#CFCFCF] pl-2">Recebimento</td>
+                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Instantâneo</div></td>
+                        <td className="py-4 text-destructive pr-2"><div className="flex items-center gap-2"><X className="h-4 w-4" /> D+14 ou D+30</div></td>
+                      </tr>
+                      <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
+                        <td className="py-4 text-[#CFCFCF] pl-2">Dinheiro vai para</td>
+                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Seu banco direto</div></td>
+                        <td className="py-4 text-destructive pr-2"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Wallet da plataforma</div></td>
+                      </tr>
+                      <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
+                        <td className="py-4 text-[#CFCFCF] pl-2">Dependência da plataforma</td>
+                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nenhuma</div></td>
+                        <td className="py-4 text-destructive pr-2"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Total</div></td>
+                      </tr>
+                      <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
+                        <td className="py-4 text-[#CFCFCF] pl-2">Bloqueio de saldo</td>
+                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nunca</div></td>
+                        <td className="py-4 text-destructive pr-2"><div className="flex items-center gap-2"><X className="h-4 w-4" /> Comum</div></td>
+                      </tr>
+                    </tbody>
+                  </table>
                   <div className="mt-6 rounded-lg px-4 py-3 text-sm bg-emerald-900/25 border border-emerald-500/30">
                     <span className="font-medium text-emerald-300">Economia média:</span>
                     <span className="text-[#CFCFCF]"> vendendo R$ 5.000/mês você economiza até </span>
