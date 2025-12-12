@@ -345,28 +345,28 @@ const Index = () => {
                     <tbody>
                       <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
                         <td className="py-4 text-[#CFCFCF] pl-2">Taxa por venda</td>
-                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> 0%</div></td>
-                        <td className="py-4 text-destructive pr-2 text-right"><div className="flex items-center gap-2 justify-end w-full"><X className="h-4 w-4" /> 4% a 12%</div></td>
+                        <td className="py-4 font-semibold text-emerald-400 align-middle"><span className="inline-flex items-center gap-1.5 whitespace-nowrap leading-5"><Check className="h-4 w-4 flex-none" /> <span>0%</span></span></td>
+                        <td className="py-4 text-destructive pr-2 text-right align-middle"><span className="inline-flex items-center gap-1.5 justify-end whitespace-nowrap leading-5"><X className="h-4 w-4 flex-none" /> <span>4% a 12%</span></span></td>
                       </tr>
                       <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
                         <td className="py-4 text-[#CFCFCF] pl-2">Recebimento</td>
-                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Instantâneo</div></td>
-                        <td className="py-4 text-destructive pr-2 text-right"><div className="flex items-center gap-2 justify-end w-full"><X className="h-4 w-4" /> D+14 ou D+30</div></td>
+                        <td className="py-4 font-semibold text-emerald-400 align-middle"><span className="inline-flex items-center gap-1.5 whitespace-nowrap leading-5"><Check className="h-4 w-4 flex-none" /> <span>Instantâneo</span></span></td>
+                        <td className="py-4 text-destructive pr-2 text-right align-middle"><span className="inline-flex items-center gap-1.5 justify-end whitespace-nowrap leading-5"><X className="h-4 w-4 flex-none" /> <span>D+14 ou D+30</span></span></td>
                       </tr>
                       <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
                         <td className="py-4 text-[#CFCFCF] pl-2">Dinheiro vai para</td>
-                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Seu banco direto</div></td>
-                        <td className="py-4 text-destructive pr-2 text-right"><div className="flex items-center gap-2 justify-end w-full"><X className="h-4 w-4" /> Wallet da plataforma</div></td>
+                        <td className="py-4 font-semibold text-emerald-400 align-middle"><span className="inline-flex items-center gap-1.5 whitespace-nowrap leading-5"><Check className="h-4 w-4 flex-none" /> <span>Seu banco direto</span></span></td>
+                        <td className="py-4 text-destructive pr-2 text-right align-middle"><span className="inline-flex items-center gap-1.5 justify-end whitespace-nowrap leading-5"><X className="h-4 w-4 flex-none" /> <span>Wallet da plataforma</span></span></td>
                       </tr>
                       <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
                         <td className="py-4 text-[#CFCFCF] pl-2">Dependência da plataforma</td>
-                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nenhuma</div></td>
-                        <td className="py-4 text-destructive pr-2 text-right"><div className="flex items-center gap-2 justify-end w-full"><X className="h-4 w-4" /> Total</div></td>
+                        <td className="py-4 font-semibold text-emerald-400 align-middle"><span className="inline-flex items-center gap-1.5 whitespace-nowrap leading-5"><Check className="h-4 w-4 flex-none" /> <span>Nenhuma</span></span></td>
+                        <td className="py-4 text-destructive pr-2 text-right align-middle"><span className="inline-flex items-center gap-1.5 justify-end whitespace-nowrap leading-5"><X className="h-4 w-4 flex-none" /> <span>Total</span></span></td>
                       </tr>
                       <tr className="border-t border-white/10 transition-colors group hover:bg-white/5">
                         <td className="py-4 text-[#CFCFCF] pl-2">Bloqueio de saldo</td>
-                        <td className="py-4 font-semibold text-emerald-400"><div className="flex items-center gap-2"><Check className="h-4 w-4" /> Nunca</div></td>
-                        <td className="py-4 text-destructive pr-2 text-right"><div className="flex items-center gap-2 justify-end w-full"><X className="h-4 w-4" /> Comum</div></td>
+                        <td className="py-4 font-semibold text-emerald-400 align-middle"><span className="inline-flex items-center gap-1.5 whitespace-nowrap leading-5"><Check className="h-4 w-4 flex-none" /> <span>Nunca</span></span></td>
+                        <td className="py-4 text-destructive pr-2 text-right align-middle"><span className="inline-flex items-center gap-1.5 justify-end whitespace-nowrap leading-5"><X className="h-4 w-4 flex-none" /> <span>Comum</span></span></td>
                       </tr>
                     </tbody>
                   </table>
