@@ -123,7 +123,7 @@ const Index = () => {
                     <div className="mt-1 text-xs text-[#9A9A9A]">+23.5%</div>
                   </div>
                 </div>
-                <img src="https://i.imgur.com/vtcLGj6.png" alt="Visão geral da plataforma" className="fade-on-scroll w-full h-auto rounded-xl shadow-none md:scale-[1.2] transform-gpu origin-center mobile-hero-img" loading="lazy" referrerPolicy="no-referrer" />
+                <img src="https://i.imgur.com/vtcLGj6.png" alt="Visão geral da plataforma" className="fade-on-scroll w-full h-auto rounded-xl shadow-none md:scale-[1.4] lg:scale-[1.5] transform-gpu origin-center mobile-hero-img" loading="lazy" referrerPolicy="no-referrer" />
                 <div className="mt-6 flex md:hidden flex-col gap-4 items-stretch">
                   <Button className="bg-gradient-to-r from-[#8A2BE2] to-[#D34FE2] text-black font-semibold hover:opacity-90 px-6 py-6 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8A2BE2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A1A] active:scale-[0.99] transition" onClick={() => navigate("/auth?signup=1")}>
                     Começar gratuitamente
