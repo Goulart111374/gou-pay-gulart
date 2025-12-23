@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "installCommand": "npm install && npm install --prefix admin-panel",
+  "buildCommand": "npm run build && cd admin-panel && export BASE_PATH=/admin/ && npm run build && cd .. && mkdir -p dist/admin && cp -r admin-panel/dist/* dist/admin/",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/admin", "destination": "/admin/index.html" },
